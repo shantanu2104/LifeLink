@@ -28,7 +28,8 @@ function App() {
         <Route path="/admin/patients" element={<PatientsPage />} />
         <Route path="/patient/dashboard" element={<PatientDashboard />} />
         <Route path="/doctor/edit-profile" element={<EditDoctorProfile/>} />
-<Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+        <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+       <Route path="/patient/history" element={<PatientsPage/>}/>
       </Routes>
 
       {/* Toast should be OUTSIDE Routes */}

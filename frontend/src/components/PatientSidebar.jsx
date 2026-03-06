@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { FaHeartbeat, FaColumns, FaCalendarPlus, FaHistory, FaSignOutAlt } from "react-icons/fa";
 
 export default function PatientSidebar() {
@@ -7,6 +7,13 @@ export default function PatientSidebar() {
     localStorage.clear();
     window.location.href = "/login";
   };
+
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-3 p-3 rounded-lg ${
+      isActive
+        ? "bg-blue-600 text-white"
+        : "text-gray-300 hover:bg-slate-700"
+    }`;
 
   return (
     <aside className="w-60 bg-slate-800 text-white flex flex-col p-6 min-h-screen">
@@ -19,31 +26,18 @@ export default function PatientSidebar() {
       <ul className="flex flex-col gap-2">
 
         <li>
-          <Link
-            to="/patient/dashboard"
-            className="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-slate-700"
-          >
+          <NavLink to="/patient/dashboard" className={linkClass}>
             <FaColumns /> Dashboard
-          </Link>
-        </li>
-
-        <li className="bg-blue-600 rounded-lg">
-          <Link
-            to="/patient/book-appointment"
-            className="flex items-center gap-3 p-3"
-          >
-            <FaCalendarPlus /> Book Appointment
-          </Link>
+          </NavLink>
         </li>
 
         <li>
-          <Link
-            to="/patient/history"
-            className="flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-slate-700"
-          >
-            <FaHistory /> History
-          </Link>
+          <NavLink to="/patient/book-appointment" className={linkClass}>
+            <FaCalendarPlus /> Book Appointment
+          </NavLink>
         </li>
+
+       
 
       </ul>
 

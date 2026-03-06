@@ -1,18 +1,23 @@
 const express = require("express");
 const router = express.Router();
 
-// Import the specific functions we defined in the controller
-const { 
-  getAllAppointments, 
-  bookAppointment 
+const {
+  getAllAppointments,
+  bookAppointment,
+  cancelAppointment
 } = require("../controllers/appointmentController");
 
-// @route   GET /api/appointments
-// @desc    Get all appointments (Admin)
+
+// GET all appointments
 router.get("/", getAllAppointments);
 
-// @route   POST /api/appointments
-// @desc    Book an appointment (Patient)
+
+// BOOK appointment
 router.post("/", bookAppointment);
+
+
+// CANCEL appointment
+router.delete("/:id", cancelAppointment);
+
 
 module.exports = router;

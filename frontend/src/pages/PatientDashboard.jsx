@@ -16,6 +16,7 @@ export default function PatientDashboard() {
     loadAppointments();
   }, []);
 
+  // ================= LOAD APPOINTMENTS =================
   const loadAppointments = async () => {
 
     try {
@@ -41,6 +42,35 @@ export default function PatientDashboard() {
       console.error("Error loading appointments", err);
     }
   };
+
+
+  // ================= CANCEL APPOINTMENT =================
+  const cancelAppointment = async (id) => {
+
+    const confirmCancel = window.confirm("Cancel this appointment?");
+
+    if (!confirmCancel) return;
+
+    try {
+
+      await axios.delete(
+        `http://localhost:5002/api/appointments/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      // remove from UI
+      setAppointments(appointments.filter(app => app._id !== id));
+
+    } catch (err) {
+      console.error("Error cancelling appointment", err);
+    }
+
+  };
+
 
   const logout = () => {
     localStorage.clear();
@@ -132,6 +162,7 @@ export default function PatientDashboard() {
               const specialization = app.doctor?.specialization || "General";
 
               const date = new Date(app.appointmentDate).toLocaleDateString();
+
               const time = new Date(app.appointmentDate).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"
@@ -165,7 +196,7 @@ export default function PatientDashboard() {
 
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-2">
 
                     <div className="font-semibold text-green-600">
                       {date}
@@ -174,6 +205,13 @@ export default function PatientDashboard() {
                     <div className="text-sm text-gray-500">
                       {time}
                     </div>
+
+                    <button
+                      onClick={() => cancelAppointment(app._id)}
+                      className="bg-red-500 text-white text-sm px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Cancel
+                    </button>
 
                   </div>
 
