@@ -78,6 +78,26 @@ export default function Landing() {
                 Specialized care for infants and children.
               </p>
             </div>
+           <div className="bg-white p-8 shadow rounded-xl">
+  <h3 className="text-xl font-semibold">Orthopedics</h3>
+  <p className="text-gray-500 mt-2">
+    Advanced care for bones, joints, and sports injuries.
+  </p>
+</div>
+
+<div className="bg-white p-8 shadow rounded-xl">
+  <h3 className="text-xl font-semibold">Dermatology</h3>
+  <p className="text-gray-500 mt-2">
+    Expert treatment for skin, hair, and nail conditions.
+  </p>
+</div>
+
+<div className="bg-white p-8 shadow rounded-xl">
+  <h3 className="text-xl font-semibold">Ophthalmology</h3>
+  <p className="text-gray-500 mt-2">
+    Specialized diagnosis and treatment for eye diseases.
+  </p>
+</div>
 
           </div>
         </div>

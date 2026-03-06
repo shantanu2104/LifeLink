@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-
+import { FaSignOutAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
 const API = "http://localhost:5002/api";
 
 export default function DoctorDashboard() {
@@ -64,22 +65,24 @@ export default function DoctorDashboard() {
             Dashboard
           </div>
 
-          <div className="text-gray-400 p-3 rounded hover:bg-slate-800 cursor-pointer">
-            Edit Profile
-          </div>
-
+  <Link
+to="/doctor/edit-profile"
+className="text-gray-400 p-3 rounded hover:bg-slate-800 block"
+>
+Edit Profile
+</Link>
         </div>
 
-        <button
-        className="mt-auto text-red-400"
-        onClick={()=>{
-          localStorage.clear();
-          window.location.href="/login";
-        }}
-        >
-        Logout
-        </button>
-
+     <button
+className="mt-auto text-red-400 flex items-center gap-2 hover:text-red-500"
+onClick={()=>{
+  localStorage.clear();
+  window.location.href="/login";
+}}
+>
+  <FaSignOutAlt />
+  Logout
+</button>
       </div>
 
 

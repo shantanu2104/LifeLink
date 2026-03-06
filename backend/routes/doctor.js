@@ -12,4 +12,8 @@ router.post("/", doctorController.createDoctor);
 // @access  Public
 router.get("/", doctorController.getAllDoctors);
 
+router.delete("/:id", doctorController.deleteDoctor);
+// UPDATE doctor profile
+router.put("/:id", doctorController.updateDoctorProfile);
+
 module.exports = router;

@@ -41,7 +41,25 @@ export default function AdminDashboard() {
       console.log(err);
     }
   };
+   const deleteDoctor = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this doctor?")) return;
 
+  try {
+    await axios.delete(
+      `http://localhost:5002/api/doctors/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    alert("Doctor deleted successfully");
+
+    fetchDoctors(); // refresh table
+    fetchStats();   // update stats
+
+  } catch (err) {
+    console.log(err);
+    alert("Failed to delete doctor");
+  }
+};
   const fetchDoctors = async () => {
 
     try {
@@ -183,7 +201,14 @@ export default function AdminDashboard() {
                             Active
                           </span>
                         </td>
-
+                      <td>
+  <button
+    onClick={() => deleteDoctor(doc._id)}
+    className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+  >
+    Delete
+  </button>
+</td>
                       </tr>
                     ))
                   )}
