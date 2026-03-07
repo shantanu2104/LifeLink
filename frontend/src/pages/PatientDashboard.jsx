@@ -12,10 +12,6 @@ export default function PatientDashboard() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadAppointments();
-  }, []);
-
   // ================= LOAD APPOINTMENTS =================
   const loadAppointments = async () => {
 
@@ -32,9 +28,13 @@ export default function PatientDashboard() {
 
       const allAppointments = res.data.data || [];
 
-      const myApps = allAppointments.filter(
-        (app) => app.patient && (app.patient._id === user._id || app.patient._id === user.id)
-      );
+      const myApps = allAppointments
+        .filter(
+          (app) =>
+            app.patient &&
+            (app.patient._id === user._id || app.patient._id === user.id)
+        )
+        .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
 
       setAppointments(myApps);
 
@@ -43,12 +43,19 @@ export default function PatientDashboard() {
     }
   };
 
+  useEffect(() => {
 
+  const fetchAppointments = async () => {
+    await loadAppointments();
+  };
+
+  fetchAppointments();
+
+}, []);
   // ================= CANCEL APPOINTMENT =================
   const cancelAppointment = async (id) => {
 
     const confirmCancel = window.confirm("Cancel this appointment?");
-
     if (!confirmCancel) return;
 
     try {
@@ -62,17 +69,15 @@ export default function PatientDashboard() {
         }
       );
 
-      // remove from UI
       setAppointments(appointments.filter(app => app._id !== id));
 
     } catch (err) {
       console.error("Error cancelling appointment", err);
     }
-
   };
 
-
-  const logout = () => {
+  // eslint-disable-next-line no-unused-vars
+  const _logout = () => {
     localStorage.clear();
     navigate("/login");
   };
@@ -149,9 +154,7 @@ export default function PatientDashboard() {
           {appointments.length === 0 ? (
 
             <div className="bg-white p-10 rounded-xl text-center text-gray-400">
-
               <p>You have no upcoming appointments.</p>
-
             </div>
 
           ) : (
@@ -204,6 +207,16 @@ export default function PatientDashboard() {
 
                     <div className="text-sm text-gray-500">
                       {time}
+                    </div>
+
+                    <div
+                      className={`text-sm font-semibold px-3 py-1 rounded 
+                        ${app.status === "accepted" ? "bg-green-100 text-green-700" : ""}
+                        ${app.status === "declined" ? "bg-red-100 text-red-700" : ""}
+                        ${app.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
+                      `}
+                    >
+                      {app.status || "pending"}
                     </div>
 
                     <button

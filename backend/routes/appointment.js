@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   getAllAppointments,
   bookAppointment,
-  cancelAppointment
+  cancelAppointment,
+  updateAppointmentStatus
 } = require("../controllers/appointmentController");
 
 
@@ -18,6 +19,10 @@ router.post("/", bookAppointment);
 
 // CANCEL appointment
 router.delete("/:id", cancelAppointment);
+
+
+// UPDATE STATUS (Doctor Accept / Decline)
+router.put("/status/:id", updateAppointmentStatus);
 
 
 module.exports = router;

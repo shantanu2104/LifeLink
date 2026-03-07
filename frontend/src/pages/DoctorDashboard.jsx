@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
+
 const API = "http://localhost:5002/api";
 
 export default function DoctorDashboard() {
@@ -9,14 +10,6 @@ export default function DoctorDashboard() {
   const [doctor,setDoctor] = useState(null);
 
   const token = localStorage.getItem("token");
-
-  useEffect(()=>{
-    const user = JSON.parse(localStorage.getItem("user"));
-    setDoctor(user);
-
-    loadAppointments(user);
-  },[]);
-
 
   const loadAppointments = async(user)=>{
 
@@ -45,7 +38,54 @@ export default function DoctorDashboard() {
   };
 
 
+  const updateStatus = async(id,status)=>{
+
+    try{
+
+      await fetch(`${API}/appointments/status/${id}`,{
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json",
+          Authorization:`Bearer ${token}`
+        },
+        body:JSON.stringify({status})
+      });
+
+      loadAppointments(doctor);
+
+    }catch(err){
+      console.log(err);
+    }
+
+  };
+
+useEffect(() => {
+
+  const initDashboard = async () => {
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    setDoctor(user);
+
+    if (user) {
+      await loadAppointments(user);
+    }
+
+  };
+
+  initDashboard();
+
+}, []);
+
   if(!doctor) return <div className="p-10 text-white">Loading...</div>;
+
+  const uniquePatients = [
+    ...new Set(appointments.map(a => a.patient?._id))
+  ];
+
+  const pendingAppointments = appointments.filter(
+    a => a.status === "pending"
+  );
 
   return (
 
@@ -65,24 +105,26 @@ export default function DoctorDashboard() {
             Dashboard
           </div>
 
-  <Link
-to="/doctor/edit-profile"
-className="text-gray-400 p-3 rounded hover:bg-slate-800 block"
->
-Edit Profile
-</Link>
+          <Link
+          to="/doctor/edit-profile"
+          className="text-gray-400 p-3 rounded hover:bg-slate-800 block"
+          >
+          Edit Profile
+          </Link>
+
         </div>
 
-     <button
-className="mt-auto text-red-400 flex items-center gap-2 hover:text-red-500"
-onClick={()=>{
-  localStorage.clear();
-  window.location.href="/login";
-}}
->
-  <FaSignOutAlt />
-  Logout
-</button>
+        <button
+        className="mt-auto text-red-400 flex items-center gap-2 hover:text-red-500"
+        onClick={()=>{
+          localStorage.clear();
+          window.location.href="/login";
+        }}
+        >
+        <FaSignOutAlt />
+        Logout
+        </button>
+
       </div>
 
 
@@ -113,34 +155,6 @@ onClick={()=>{
         </div>
 
 
-        {/* DOCTOR PROFILE */}
-
-        <div className="bg-linear-to-r from-slate-800 to-slate-900 border border-yellow-400 p-6 rounded-xl flex items-center gap-6 mb-10">
-
-          <img
-          className="w-20 h-20 rounded-full border-2 border-yellow-400"
-          src={`https://ui-avatars.com/api/?name=${doctor.name}&background=D4AF37&color=fff`}
-          />
-
-          <div>
-
-            <h1 className="text-xl font-bold">
-              {doctor.name}
-            </h1>
-
-            <div className="text-yellow-400 text-sm">
-              {doctor.specialization || "General Physician"}
-            </div>
-
-            <div className="text-gray-400 text-sm">
-              {doctor.email}
-            </div>
-
-          </div>
-
-        </div>
-
-
         {/* STATS */}
 
         <div className="grid grid-cols-2 gap-6 mb-10">
@@ -148,7 +162,7 @@ onClick={()=>{
           <div className="bg-white text-black p-6 rounded">
 
             <h1 className="text-3xl font-bold">
-              {appointments.length}
+              {pendingAppointments.length}
             </h1>
 
             <p>Pending Requests</p>
@@ -158,7 +172,7 @@ onClick={()=>{
           <div className="bg-white text-black p-6 rounded">
 
             <h1 className="text-3xl font-bold">
-              {appointments.length}
+              {uniquePatients.length}
             </h1>
 
             <p>Total Patients</p>
@@ -201,6 +215,7 @@ onClick={()=>{
                   <img
                   className="w-10 h-10 rounded-full"
                   src={`https://ui-avatars.com/api/?name=${patient}`}
+                  alt={patient}
                   />
 
                   <div>
@@ -223,17 +238,33 @@ onClick={()=>{
                     {date}
                   </div>
 
-                  <div className="flex gap-2 mt-1">
+                  {app.status === "pending" ? (
 
-                    <button className="bg-green-500 text-white px-3 py-1 rounded text-sm">
+                    <div className="flex gap-2 mt-1">
+
+                      <button
+                      onClick={()=>updateStatus(app._id,"accepted")}
+                      className="bg-green-500 text-white px-3 py-1 rounded text-sm"
+                      >
                       Accept
-                    </button>
+                      </button>
 
-                    <button className="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                      <button
+                      onClick={()=>updateStatus(app._id,"declined")}
+                      className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                      >
                       Decline
-                    </button>
+                      </button>
 
-                  </div>
+                    </div>
+
+                  ) : (
+
+                    <div className="mt-1 text-sm font-semibold">
+                      Status: {app.status}
+                    </div>
+
+                  )}
 
                 </div>
 

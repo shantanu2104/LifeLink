@@ -1,7 +1,7 @@
 const Appointment = require("../models/Appointment");
 
+
 // ================= GET ALL APPOINTMENTS =================
-// @route   GET /api/appointments
 exports.getAllAppointments = async (req, res) => {
   try {
 
@@ -22,7 +22,6 @@ exports.getAllAppointments = async (req, res) => {
 
 
 // ================= BOOK APPOINTMENT =================
-// @route   POST /api/appointments
 exports.bookAppointment = async (req, res) => {
 
   try {
@@ -35,17 +34,18 @@ exports.bookAppointment = async (req, res) => {
     });
 
   } catch (error) {
+
     res.status(400).json({
       success: false,
       message: error.message
     });
+
   }
 
 };
 
 
 // ================= CANCEL APPOINTMENT =================
-// @route   DELETE /api/appointments/:id
 exports.cancelAppointment = async (req, res) => {
 
   try {
@@ -64,6 +64,37 @@ exports.cancelAppointment = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Appointment cancelled successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+};
+
+
+// ================= UPDATE STATUS =================
+exports.updateAppointmentStatus = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: appointment
     });
 
   } catch (error) {
