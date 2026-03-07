@@ -13,6 +13,7 @@ import PatientsPage from "./pages/PatientsPage";
 import PatientDashboard from "./pages/PatientDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import EditDoctorProfile from "./pages/EditDoctorProfile";
+import AppointmentDetails from "./pages/AppointementDetails";
 function App() {
   return (
     <Router>
@@ -30,6 +31,7 @@ function App() {
         <Route path="/doctor/edit-profile" element={<EditDoctorProfile/>} />
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
        <Route path="/patient/history" element={<PatientsPage/>}/>
+       <Route path="/appointment/:id" element={<AppointmentDetails />} />
       </Routes>
 
       {/* Toast should be OUTSIDE Routes */}

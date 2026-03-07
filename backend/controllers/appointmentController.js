@@ -107,3 +107,57 @@ exports.updateAppointmentStatus = async (req, res) => {
   }
 
 };
+exports.updateAppointmentRecord = async(req,res)=>{
+
+  try{
+
+    const {prescription,history,medicines,nextAppointmentDate} = req.body;
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      {
+        prescription,
+        history,
+        medicines,
+        nextAppointmentDate,
+        status:"completed"
+      },
+      {new:true}
+    );
+
+    res.status(200).json({
+      success:true,
+      data:appointment
+    });
+
+  }catch(error){
+    res.status(500).json({message:error.message});
+  }
+
+}
+exports.getAppointmentById = async (req, res) => {
+
+  try {
+
+    const appointment = await Appointment.findById(req.params.id)
+      .populate("patient", "name email")
+      .populate("doctor", "name specialization");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: appointment
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};

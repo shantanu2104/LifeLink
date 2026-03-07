@@ -13,6 +13,7 @@ export default function PatientDashboard() {
   const navigate = useNavigate();
 
   // ================= LOAD APPOINTMENTS =================
+
   const loadAppointments = async () => {
 
     try {
@@ -44,15 +45,11 @@ export default function PatientDashboard() {
   };
 
   useEffect(() => {
+    loadAppointments();
+  }, []);
 
-  const fetchAppointments = async () => {
-    await loadAppointments();
-  };
-
-  fetchAppointments();
-
-}, []);
   // ================= CANCEL APPOINTMENT =================
+
   const cancelAppointment = async (id) => {
 
     const confirmCancel = window.confirm("Cancel this appointment?");
@@ -76,13 +73,8 @@ export default function PatientDashboard() {
     }
   };
 
-  // eslint-disable-next-line no-unused-vars
-  const _logout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
   return (
+
     <div className="flex min-h-screen bg-gray-100">
 
       <PatientSidebar />
@@ -133,7 +125,7 @@ export default function PatientDashboard() {
             </h1>
 
             <p className="opacity-90 mb-4">
-              Take control of your health. You can view your history or book a new checkup.
+              Take control of your health. View prescriptions and upcoming visits.
             </p>
 
             <button
@@ -175,58 +167,94 @@ export default function PatientDashboard() {
 
                 <div
                   key={i}
-                  className="bg-white border-l-4 border-blue-600 p-5 rounded-lg shadow mb-4 flex justify-between items-center"
+                  className="bg-white border-l-4 border-blue-600 p-5 rounded-lg shadow mb-4"
                 >
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex justify-between items-center">
 
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${doctor}`}
-                      className="w-12 h-12 rounded-full"
-                    />
+                    <div className="flex items-center gap-4">
 
-                    <div>
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${doctor}`}
+                        className="w-12 h-12 rounded-full"
+                      />
 
-                      <div className="font-semibold">
-                        Dr. {doctor}
+                      <div>
+
+                        <div className="font-semibold">
+                          Dr. {doctor}
+                        </div>
+
+                        <div className="text-sm text-gray-500">
+                          {specialization} • {app.reason}
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <div className="text-right flex flex-col items-end gap-2">
+
+                      <div className="font-semibold text-green-600">
+                        {date}
                       </div>
 
                       <div className="text-sm text-gray-500">
-                        {specialization} • {app.reason}
+                        {time}
                       </div>
 
+                      <div
+                        className={`text-sm font-semibold px-3 py-1 rounded 
+                          ${app.status === "accepted" ? "bg-green-100 text-green-700" : ""}
+                          ${app.status === "declined" ? "bg-red-100 text-red-700" : ""}
+                          ${app.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
+                        `}
+                      >
+                        {app.status || "pending"}
+                      </div>
+
+                      {app.status === "pending" && (
+
+                        <button
+                          onClick={() => cancelAppointment(app._id)}
+                          className="bg-red-500 text-white text-sm px-3 py-1 rounded hover:bg-red-600"
+                        >
+                          Cancel
+                        </button>
+
+                      )}
+
                     </div>
 
                   </div>
 
-                  <div className="text-right flex flex-col items-end gap-2">
+                  {/* MEDICAL RECORD SECTION */}
 
-                    <div className="font-semibold text-green-600">
-                      {date}
+                  {(app.prescription || app.history || app.nextAppointmentDate) && (
+
+                    <div className="mt-4 border-t pt-4 text-sm">
+
+                      {app.prescription && (
+                        <div className="mb-2">
+                          <span className="font-semibold">Prescription:</span> {app.prescription}
+                        </div>
+                      )}
+
+                      {app.history && (
+                        <div className="mb-2">
+                          <span className="font-semibold">Doctor Notes:</span> {app.history}
+                        </div>
+                      )}
+
+                      {app.nextAppointmentDate && (
+                        <div className="font-semibold text-green-600">
+                          Next Visit: {new Date(app.nextAppointmentDate).toLocaleDateString()}
+                        </div>
+                      )}
+
                     </div>
 
-                    <div className="text-sm text-gray-500">
-                      {time}
-                    </div>
-
-                    <div
-                      className={`text-sm font-semibold px-3 py-1 rounded 
-                        ${app.status === "accepted" ? "bg-green-100 text-green-700" : ""}
-                        ${app.status === "declined" ? "bg-red-100 text-red-700" : ""}
-                        ${app.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
-                      `}
-                    >
-                      {app.status || "pending"}
-                    </div>
-
-                    <button
-                      onClick={() => cancelAppointment(app._id)}
-                      className="bg-red-500 text-white text-sm px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Cancel
-                    </button>
-
-                  </div>
+                  )}
 
                 </div>
 
@@ -240,5 +268,6 @@ export default function PatientDashboard() {
       </div>
 
     </div>
+
   );
 }

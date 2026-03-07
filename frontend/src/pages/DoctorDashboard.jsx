@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const API = "http://localhost:5002/api";
 
@@ -10,6 +10,9 @@ export default function DoctorDashboard() {
   const [doctor,setDoctor] = useState(null);
 
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  // ================= LOAD APPOINTMENTS =================
 
   const loadAppointments = async(user)=>{
 
@@ -37,6 +40,7 @@ export default function DoctorDashboard() {
     }
   };
 
+  // ================= UPDATE STATUS =================
 
   const updateStatus = async(id,status)=>{
 
@@ -59,23 +63,25 @@ export default function DoctorDashboard() {
 
   };
 
-useEffect(() => {
+  // ================= INIT =================
 
-  const initDashboard = async () => {
+  useEffect(() => {
 
-    const user = JSON.parse(localStorage.getItem("user"));
+    const initDashboard = async () => {
 
-    setDoctor(user);
+      const user = JSON.parse(localStorage.getItem("user"));
 
-    if (user) {
-      await loadAppointments(user);
-    }
+      setDoctor(user);
 
-  };
+      if (user) {
+        await loadAppointments(user);
+      }
 
-  initDashboard();
+    };
 
-}, []);
+    initDashboard();
+
+  }, []);
 
   if(!doctor) return <div className="p-10 text-white">Loading...</div>;
 
@@ -127,7 +133,6 @@ useEffect(() => {
 
       </div>
 
-
       {/* MAIN */}
 
       <div className="flex-1 p-10">
@@ -154,7 +159,6 @@ useEffect(() => {
 
         </div>
 
-
         {/* STATS */}
 
         <div className="grid grid-cols-2 gap-6 mb-10">
@@ -180,7 +184,6 @@ useEffect(() => {
           </div>
 
         </div>
-
 
         {/* REQUEST LIST */}
 
@@ -228,6 +231,19 @@ useEffect(() => {
                       Reason: {app.reason}
                     </div>
 
+                    {/* NEXT APPOINTMENT */}
+
+                    {app.nextAppointmentDate && (
+
+                      <div className="text-green-600 font-semibold text-sm">
+
+                        Next Visit: {new Date(app.nextAppointmentDate)
+                        .toLocaleDateString()}
+
+                      </div>
+
+                    )}
+
                   </div>
 
                 </div>
@@ -266,6 +282,19 @@ useEffect(() => {
 
                   )}
 
+                  {/* OPEN APPOINTMENT */}
+
+                  {app.status === "accepted" && (
+
+                    <button
+                    onClick={()=>navigate(`/appointment/${app._id}`)}
+                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm mt-2"
+                    >
+                    Open
+                    </button>
+
+                  )}
+
                 </div>
 
               </div>
@@ -279,5 +308,6 @@ useEffect(() => {
       </div>
 
     </div>
+
   );
 }
