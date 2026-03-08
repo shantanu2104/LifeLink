@@ -7,17 +7,15 @@ const {
   cancelAppointment,
   updateAppointmentStatus,
   updateAppointmentRecord,
-  getAppointmentById
+  getAppointmentById,
+  getDoctorSlots
 } = require("../controllers/appointmentController");
 
-// GET all appointments
-router.get("/", getAllAppointments);
 
-// GET single appointment
-router.get("/:id", getAppointmentById);
+// ================= SPECIAL ROUTES FIRST =================
 
-// BOOK appointment
-router.post("/", bookAppointment);
+// GET doctor slots
+router.get("/slots", getDoctorSlots);
 
 // UPDATE STATUS (Doctor Accept / Decline)
 router.put("/status/:id", updateAppointmentStatus);
@@ -25,7 +23,23 @@ router.put("/status/:id", updateAppointmentStatus);
 // UPDATE RECORD (Prescription / History / Next Visit)
 router.put("/record/:id", updateAppointmentRecord);
 
+
+// ================= NORMAL ROUTES =================
+
+// GET all appointments
+router.get("/", getAllAppointments);
+
+// BOOK appointment
+router.post("/", bookAppointment);
+
+
+// ================= PARAMETER ROUTES LAST =================
+
+// GET single appointment
+router.get("/:id", getAppointmentById);
+
 // CANCEL appointment
 router.delete("/:id", cancelAppointment);
+
 
 module.exports = router;

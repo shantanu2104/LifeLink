@@ -3,6 +3,7 @@ const Appointment = require("../models/Appointment");
 
 // ================= GET ALL APPOINTMENTS =================
 exports.getAllAppointments = async (req, res) => {
+
   try {
 
     const appointments = await Appointment.find()
@@ -16,15 +17,40 @@ exports.getAllAppointments = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
+
 };
+
 
 
 // ================= BOOK APPOINTMENT =================
 exports.bookAppointment = async (req, res) => {
 
   try {
+
+    const { doctor, appointmentDate } = req.body;
+
+    // prevent duplicate booking
+    const existing = await Appointment.findOne({
+      doctor,
+      appointmentDate,
+      status: { $in: ["pending", "accepted"] }
+    });
+
+    if (existing) {
+
+      return res.status(400).json({
+        success: false,
+        message: "This slot is already booked"
+      });
+
+    }
 
     const appointment = await Appointment.create(req.body);
 
@@ -45,6 +71,7 @@ exports.bookAppointment = async (req, res) => {
 };
 
 
+
 // ================= CANCEL APPOINTMENT =================
 exports.cancelAppointment = async (req, res) => {
 
@@ -53,10 +80,12 @@ exports.cancelAppointment = async (req, res) => {
     const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment) {
+
       return res.status(404).json({
         success: false,
         message: "Appointment not found"
       });
+
     }
 
     await Appointment.findByIdAndDelete(req.params.id);
@@ -78,6 +107,7 @@ exports.cancelAppointment = async (req, res) => {
 };
 
 
+
 // ================= UPDATE STATUS =================
 exports.updateAppointmentStatus = async (req, res) => {
 
@@ -86,11 +116,40 @@ exports.updateAppointmentStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const appointment = await Appointment.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+    const appointment = await Appointment.findById(id);
+
+    if (!appointment) {
+
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found"
+      });
+
+    }
+
+    // prevent double acceptance
+    if (status === "accepted") {
+
+      const existing = await Appointment.findOne({
+        doctor: appointment.doctor,
+        appointmentDate: appointment.appointmentDate,
+        status: "accepted"
+      });
+
+      if (existing) {
+
+        return res.status(400).json({
+          success: false,
+          message: "This slot is already taken"
+        });
+
+      }
+
+    }
+
+    appointment.status = status;
+
+    await appointment.save();
 
     res.status(200).json({
       success: true,
@@ -107,11 +166,15 @@ exports.updateAppointmentStatus = async (req, res) => {
   }
 
 };
-exports.updateAppointmentRecord = async(req,res)=>{
 
-  try{
 
-    const {prescription,history,medicines,nextAppointmentDate} = req.body;
+
+// ================= UPDATE MEDICAL RECORD =================
+exports.updateAppointmentRecord = async (req, res) => {
+
+  try {
+
+    const { prescription, history, medicines, nextAppointmentDate } = req.body;
 
     const appointment = await Appointment.findByIdAndUpdate(
       req.params.id,
@@ -120,21 +183,29 @@ exports.updateAppointmentRecord = async(req,res)=>{
         history,
         medicines,
         nextAppointmentDate,
-        status:"completed"
+        status: "completed"
       },
-      {new:true}
+      { new: true }
     );
 
     res.status(200).json({
-      success:true,
-      data:appointment
+      success: true,
+      data: appointment
     });
 
-  }catch(error){
-    res.status(500).json({message:error.message});
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
   }
 
-}
+};
+
+
+
+// ================= GET APPOINTMENT BY ID =================
 exports.getAppointmentById = async (req, res) => {
 
   try {
@@ -144,7 +215,11 @@ exports.getAppointmentById = async (req, res) => {
       .populate("doctor", "name specialization");
 
     if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+
+      return res.status(404).json({
+        message: "Appointment not found"
+      });
+
     }
 
     res.status(200).json({
@@ -155,6 +230,68 @@ exports.getAppointmentById = async (req, res) => {
   } catch (error) {
 
     res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
+
+// ================= GET DOCTOR BOOKED SLOTS =================
+exports.getDoctorSlots = async (req, res) => {
+
+  try {
+
+    const { doctorId, date } = req.query;
+
+    const start = new Date(date);
+    start.setHours(0,0,0,0);
+
+    const end = new Date(date);
+    end.setHours(23,59,59,999);
+
+    const appointments = await Appointment.find({
+      doctor: doctorId,
+      status: { $in: ["pending", "accepted"] },
+      appointmentDate: { $gte: start, $lte: end }
+    });
+
+    const bookedSlots = [];
+    const pendingSlots = [];
+
+    appointments.forEach(app => {
+
+      const time = new Date(app.appointmentDate);
+
+      // Use consistent 24-hour format
+      const slot = time.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      });
+
+      if(app.status === "accepted"){
+        bookedSlots.push(slot);
+      }
+
+      if(app.status === "pending"){
+        pendingSlots.push(slot);
+      }
+
+    });
+
+    res.json({
+      success: true,
+      bookedSlots,
+      pendingSlots
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
       message: error.message
     });
 
