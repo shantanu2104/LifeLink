@@ -99,40 +99,41 @@ export default function DoctorDashboard() {
 
       {/* SIDEBAR */}
 
-      <div className="w-64 bg-slate-950 p-6 flex flex-col">
+  
 
-        <h1 className="text-2xl font-bold text-yellow-400 mb-10">
-          LifeLink
-        </h1>
+<div className="w-64 bg-slate-950 p-6 flex flex-col h-screen sticky top-0">
 
-        <div className="space-y-3">
+  <h1 className="text-2xl font-bold text-yellow-400 mb-10">
+    LifeLink
+  </h1>
 
-          <div className="bg-yellow-400 text-black p-3 rounded font-semibold">
-            Dashboard
-          </div>
+  <div className="space-y-3">
 
-          <Link
-          to="/doctor/edit-profile"
-          className="text-gray-400 p-3 rounded hover:bg-slate-800 block"
-          >
-          Edit Profile
-          </Link>
+    <div className="bg-yellow-400 text-black p-3 rounded font-semibold">
+      Dashboard
+    </div>
 
-        </div>
+    <Link
+      to="/doctor/edit-profile"
+      className="text-gray-400 p-3 rounded hover:bg-slate-800 block"
+    >
+      Edit Profile
+    </Link>
 
-        <button
-        className="mt-auto text-red-400 flex items-center gap-2 hover:text-red-500"
-        onClick={()=>{
-          localStorage.clear();
-          window.location.href="/login";
-        }}
-        >
-        <FaSignOutAlt />
-        Logout
-        </button>
+  </div>
 
-      </div>
+  <button
+    className="mt-auto text-red-400 flex items-center gap-2 hover:text-red-500"
+    onClick={()=>{
+      localStorage.clear();
+      window.location.href="/login";
+    }}
+  >
+    <FaSignOutAlt />
+    Logout
+  </button>
 
+</div>
       {/* MAIN */}
 
       <div className="flex-1 p-10">

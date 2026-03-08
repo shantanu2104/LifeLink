@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaHeartbeat, FaColumns, FaCalendarPlus, FaHistory, FaSignOutAlt } from "react-icons/fa";
+import { FaHeartbeat, FaColumns, FaCalendarPlus, FaSignOutAlt } from "react-icons/fa";
 
 export default function PatientSidebar() {
 
@@ -16,13 +16,15 @@ export default function PatientSidebar() {
     }`;
 
   return (
-    <aside className="w-60 bg-slate-800 text-white flex flex-col p-6 min-h-screen">
+    <aside className="w-60 bg-slate-800 text-white flex flex-col p-6 h-screen sticky top-0">
 
+      {/* Logo */}
       <div className="flex items-center gap-2 text-xl font-bold mb-10">
         <FaHeartbeat className="text-green-400" />
         LifeLink
       </div>
 
+      {/* Navigation */}
       <ul className="flex flex-col gap-2">
 
         <li>
@@ -37,13 +39,12 @@ export default function PatientSidebar() {
           </NavLink>
         </li>
 
-       
-
       </ul>
 
+      {/* Logout */}
       <button
         onClick={logout}
-        className="flex items-center gap-3 text-red-400 mt-auto"
+        className="flex items-center gap-3 text-red-400 mt-auto hover:text-red-500"
       >
         <FaSignOutAlt /> Logout
       </button>

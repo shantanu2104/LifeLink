@@ -44,6 +44,7 @@ exports.getAllDoctors = async (req, res) => {
     const doctors = await User.find({ role: "doctor" })
       .select("-password")
       .sort({ createdAt: -1 });
+     
 
     res.status(200).json({
       success: true,
@@ -70,7 +71,7 @@ exports.deleteDoctor = async (req, res) => {
   try {
 
     const doctor = await User.findById(req.params.id);
-
+    
     if (!doctor) {
       return res.status(404).json({
         success: false,
@@ -84,7 +85,7 @@ exports.deleteDoctor = async (req, res) => {
         message: "User is not a doctor"
       });
     }
-
+   
     await User.findByIdAndDelete(req.params.id);
 
     res.status(200).json({

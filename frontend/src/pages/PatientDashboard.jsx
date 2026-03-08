@@ -235,14 +235,15 @@ export default function PatientDashboard() {
                     <div className="mt-4 border-t pt-4 text-sm">
 
                       {app.prescription && (
-                        <div className="mb-2">
-                          <span className="font-semibold">Prescription:</span> {app.prescription}
-                        </div>
+                        <div className="mb-2 whitespace-pre-line">
+                        <span className="font-semibold">Prescription:</span>{" "}
+                        {app.prescription}
+                 </div>
                       )}
 
                       {app.history && (
                         <div className="mb-2">
-                          <span className="font-semibold">Doctor Notes:</span> {app.history}
+                          <span className="font-semibold">Doctor Notes:</span>{" "} {app.history}
                         </div>
                       )}
 

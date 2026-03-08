@@ -18,7 +18,7 @@ export default function AdminSidebar() {
     "text-gray-300 hover:bg-slate-800";
 
   return (
-    <aside className="w-65 bg-slate-900 text-white flex flex-col p-6 min-h-screen">
+    <aside className="w-65 bg-slate-900 text-white flex flex-col p-6 h-screen sticky top-0">
 
       <div className="flex items-center gap-2 text-xl font-bold mb-10">
         <FaHeartbeat className="text-emerald-400"/>
