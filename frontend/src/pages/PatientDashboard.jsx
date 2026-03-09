@@ -19,7 +19,7 @@ export default function PatientDashboard() {
     try {
 
       const res = await axios.get(
-        "http://localhost:5002/api/appointments",
+        `${import.meta.env.VITE_URL}/api/appointments`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -58,7 +58,7 @@ export default function PatientDashboard() {
     try {
 
       await axios.delete(
-        `http://localhost:5002/api/appointments/${id}`,
+        `${import.meta.env.VITE_URL}/api/appointments/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`

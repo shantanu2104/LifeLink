@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
-const API = "http://localhost:5002/api";
+const API = `${import.meta.env.VITE_URL}/api`;
 
 export default function DoctorDashboard() {
 

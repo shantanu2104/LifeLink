@@ -31,7 +31,7 @@ const loadDoctors = async()=>{
 
 try{
 
-const res = await axios.get("http://localhost:5002/api/doctors");
+const res = await axios.get(`${import.meta.env.VITE_URL}/api/doctors`);
 
 setDoctors(res.data.data || []);
 
@@ -93,7 +93,7 @@ if(!form.doctor || !form.date) return;
 try{
 
 const res = await axios.get(
-"http://localhost:5002/api/appointments/slots",
+`${import.meta.env.VITE_URL}/api/appointments/slots`,
 {
 params:{
 doctorId:form.doctor,
@@ -151,7 +151,7 @@ appointmentDate.setHours(time.getHours());
 appointmentDate.setMinutes(time.getMinutes());
 
 await axios.post(
-"http://localhost:5002/api/appointments",
+`${import.meta.env.VITE_URL}/api/appointments`,
 {
 doctor:form.doctor,
 patient:user?._id || user?.id,

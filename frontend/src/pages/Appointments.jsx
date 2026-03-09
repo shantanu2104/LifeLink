@@ -17,7 +17,7 @@ export default function Appointments() {
     try {
 
       const res = await axios.get(
-        "http://localhost:5002/api/appointments",
+        `${import.meta.env.VITE_URL}/api/appointments`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

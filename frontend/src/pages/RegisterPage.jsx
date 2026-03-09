@@ -31,7 +31,7 @@ export default function RegisterPage() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5002/api/auth/register",
+        `${import.meta.env.VITE_URL}/api/auth/register`,
         form
       );
 

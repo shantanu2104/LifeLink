@@ -13,7 +13,7 @@ export default function Landing() {
   className="relative h-screen flex items-center justify-center text-white text-center bg-cover bg-center"
   style={{
     backgroundImage:
-      "url('https://img.freepik.com/free-photo/modern-hospital-building_23-2148980753.jpg')",
+      "VITE_URL('https://img.freepik.com/free-photo/modern-hospital-building_23-2148980753.jpg')",
   }}
 >
   {/* Dark overlay to keep text visible */}

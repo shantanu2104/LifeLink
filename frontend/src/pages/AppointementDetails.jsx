@@ -21,7 +21,7 @@ loadAppointment();
 const loadAppointment = async()=>{
 
 const res = await axios.get(
-`http://localhost:5002/api/appointments/${id}`,
+`${import.meta.env.VITE_URL}/api/appointments/${id}`,
 {
 headers:{Authorization:`Bearer ${token}`}
 }
@@ -34,7 +34,7 @@ setAppointment(res.data.data);
 const saveRecord = async()=>{
 
 await axios.put(
-`http://localhost:5002/api/appointments/record/${id}`,
+`${import.meta.env.VITE_URL}/api/appointments/record/${id}`,
 {
 prescription,
 history,

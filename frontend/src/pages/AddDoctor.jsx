@@ -30,7 +30,7 @@ export default function AddDoctor() {
     const token = localStorage.getItem("token");
 
     const { data } = await axios.post(
-      "http://localhost:5002/api/doctors",
+      `${import.meta.env.VITE_URL}/api/doctors`,
       form,
       {
         headers: {

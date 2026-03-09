@@ -19,7 +19,7 @@ export default function PatientsPage() {
     try {
 
       const res = await axios.get(
-        "http://localhost:5002/api/patients",
+        `${import.meta.env.VITE_URL}/api/patients`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

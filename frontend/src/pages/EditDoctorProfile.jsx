@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API = "http://localhost:5002/api";
+const API = `${import.meta.env.VITE_URL}/api`;
 
 export default function EditDoctorProfile() {
    const navigate = useNavigate()
