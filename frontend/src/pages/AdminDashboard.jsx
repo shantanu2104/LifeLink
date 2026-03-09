@@ -21,9 +21,9 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
 
-      const docRes = await axios.get(`${import.meta.env.VITE_VITE_URL}/api/doctors`);
-      const patRes = await axios.get(`${import.meta.env.VITE_VITE_URL}/api/patients`);
-      const appRes = await axios.get(`${import.meta.env.VITE_VITE_URL}/api/appointments`);
+      const docRes = await axios.get(`${import.meta.env.VITE_URL}/api/doctors`);
+      const patRes = await axios.get(`${import.meta.env.VITE_URL}/api/patients`);
+      const appRes = await axios.get(`${import.meta.env.VITE_URL}/api/appointments`);
 
       setStats({
         doctors: docRes.data.count || docRes.data.length,
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     try {
 
       const res = await axios.get(
-        `${import.meta.env.VITE_VITE_URL}/api/doctors`,
+        `${import.meta.env.VITE_URL}/api/doctors`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
     try {
 
       await axios.delete(
-        `${import.meta.env.VITE_VITE_URL}/api/doctors/${id}`,
+        `${import.meta.env.VITE_URL}/api/doctors/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

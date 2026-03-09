@@ -19,9 +19,9 @@ export default function LoginPage(){
     e.preventDefault();
 
     try{
-       console.log(`${import.meta.env.VITE_VITE_URL}`);
+       console.log(`${import.meta.env.VITE_URL}`);
       const res = await axios.post(
-        `${import.meta.env.VITE_VITE_URL}/api/auth/login`,
+        `${import.meta.env.VITE_URL}/api/auth/login`,
         form
       );
 
