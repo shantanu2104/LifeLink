@@ -155,7 +155,6 @@ export default function RegisterPage() {
               <option value="">Select Role</option>
               <option value="patient">Patient</option>
               <option value="doctor">Doctor</option>
-              <option value="admin">Administrator</option>
             </select>
           </div>
 

@@ -8,12 +8,12 @@ export default function Landing() {
       <Navbar />
 
       {/* HERO */}
-    <section
+<section
   id="hero"
   className="relative h-screen flex items-center justify-center text-white text-center bg-cover bg-center"
   style={{
     backgroundImage:
-      "VITE_URL('https://img.freepik.com/free-photo/modern-hospital-building_23-2148980753.jpg')",
+      "url('https://images.unsplash.com/photo-1586773860418-d37222d8fce3')",
   }}
 >
   {/* Dark overlay to keep text visible */}
@@ -104,43 +104,59 @@ export default function Landing() {
       </section>
 
       {/* DOCTORS */}
-      <section id="doctors" className="py-20">
-        <div className="max-w-7xl mx-auto text-center">
+<section id="doctors" className="py-20 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-6 text-center">
 
-          <h2 className="text-4xl font-bold">Meet Our Specialists</h2>
+    <h2 className="text-4xl font-bold">Meet Our Specialists</h2>
+    <p className="text-gray-500 mt-2">
+      Our experienced doctors are dedicated to providing the best healthcare.
+    </p>
 
-          <div className="grid md:grid-cols-3 gap-10 mt-12">
+    <div className="grid md:grid-cols-3 gap-10 mt-12">
 
-            <div className="shadow rounded-xl p-6">
-              <img
-                src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d"
-                className="rounded-lg mb-4"
-              />
-              <h3 className="font-semibold text-lg">Dr. John Smith</h3>
-              <p className="text-gray-500">Cardiologist</p>
-            </div>
-
-            <div className="shadow rounded-xl p-6">
-              <img
-                src="https://images.unsplash.com/photo-1594824476967-48c8b964273f"
-                className="rounded-lg mb-4"
-              />
-              <h3 className="font-semibold text-lg">Dr. Sarah Lee</h3>
-              <p className="text-gray-500">Neurologist</p>
-            </div>
-
-            <div className="shadow rounded-xl p-6">
-              <img
-                src="https://images.unsplash.com/photo-1537368910025-58d90f2cd522"
-                className="rounded-lg mb-4"
-              />
-              <h3 className="font-semibold text-lg">Dr. Mike Ross</h3>
-              <p className="text-gray-500">Pediatrician</p>
-            </div>
-
-          </div>
+      {/* Doctor 1 */}
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition duration-300">
+        <img
+          src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2"
+          alt="Cardiologist"
+          className="w-full h-64 object-cover"
+        />
+        <div className="p-6">
+          <h3 className="text-lg font-semibold">Dr. Mary Jane</h3>
+          <p className="text-gray-500">Cardiologist</p>
         </div>
-      </section>
+      </div>
+
+      {/* Doctor 2 */}
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition duration-300">
+        <img
+          src="https://images.unsplash.com/photo-1612277795421-9bc7706a4a34"
+          alt="Neurologist"
+          className="w-full h-64 object-cover"
+        />
+        <div className="p-6">
+          <h3 className="text-lg font-semibold">Dr. Emily Chen</h3>
+          <p className="text-gray-500">Neurologist</p>
+        </div>
+      </div>
+
+      {/* Doctor 3 */}
+      <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition duration-300">
+        <img
+          src="https://images.unsplash.com/photo-1582750433449-648ed127bb54"
+          alt="Pediatrician"
+          className="w-full h-64 object-cover"
+        />
+        <div className="p-6">
+          <h3 className="text-lg font-semibold">Dr. Michael Brown</h3>
+          <p className="text-gray-500">Pediatrician</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
 
   
       <Footer />
