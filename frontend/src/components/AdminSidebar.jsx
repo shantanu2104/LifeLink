@@ -2,89 +2,78 @@ import { NavLink } from "react-router-dom";
 import { FaHeartbeat, FaChartPie, FaUserMd, FaUserInjured, FaCalendarAlt, FaSignOutAlt } from "react-icons/fa";
 
 export default function AdminSidebar() {
-
   const logout = () => {
     localStorage.clear();
     window.location.href = "/login";
   };
 
-  const linkClass =
-    "flex items-center gap-3 p-3 rounded-lg";
-
-  const activeClass =
-    "bg-indigo-600 text-white";
-
-  const inactiveClass =
-    "text-gray-300 hover:bg-slate-800";
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+      isActive
+        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+        : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+    }`;
 
   return (
-    <aside className="w-65 bg-slate-900 text-white flex flex-col p-6 h-screen sticky top-0">
-
-      <div className="flex items-center gap-2 text-xl font-bold mb-10">
-        <FaHeartbeat className="text-emerald-400"/>
-        LifeLink
+    <aside className="w-64 bg-slate-900 text-white flex flex-col p-6 h-screen sticky top-0 border-r border-slate-800 shadow-xl z-20">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-2 py-1 mb-8">
+        <div className="p-2.5 bg-gradient-to-tr from-indigo-500 to-emerald-400 rounded-xl text-white shadow-md shadow-indigo-500/30">
+          <FaHeartbeat className="text-xl" />
+        </div>
+        <div>
+          <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
+            LifeLink
+          </span>
+          <span className="block text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">
+            Admin Console
+          </span>
+        </div>
       </div>
 
-      <ul className="flex flex-col gap-2">
+      {/* Navigation */}
+      <nav className="flex-1">
+        <ul className="flex flex-col gap-1.5">
+          <li>
+            <NavLink to="/admin/dashboard" className={linkClass}>
+              <FaChartPie className="text-lg" />
+              <span>Dashboard</span>
+            </NavLink>
+          </li>
 
-        <li>
-          <NavLink
-            to="/admin/dashboard"
-            className={({ isActive }) =>
-              `${linkClass} ${isActive ? activeClass : inactiveClass}`
-            }
-          >
-            <FaChartPie/>
-            Dashboard
-          </NavLink>
-        </li>
+          <li>
+            <NavLink to="/admin/add-doctor" className={linkClass}>
+              <FaUserMd className="text-lg" />
+              <span>Add Doctors</span>
+            </NavLink>
+          </li>
 
-        <li>
-          <NavLink
-            to="/admin/add-doctor"
-            className={({ isActive }) =>
-              `${linkClass} ${isActive ? activeClass : inactiveClass}`
-            }
-          >
-            <FaUserMd/>
-            Add-Doctors
-          </NavLink>
-        </li>
+          <li>
+            <NavLink to="/admin/patients" className={linkClass}>
+              <FaUserInjured className="text-lg" />
+              <span>Patients</span>
+            </NavLink>
+          </li>
 
-        <li>
-          <NavLink
-            to="/admin/patients"
-            className={({ isActive }) =>
-              `${linkClass} ${isActive ? activeClass : inactiveClass}`
-            }
-          >
-            <FaUserInjured/>
-            Patients
-          </NavLink>
-        </li>
+          <li>
+            <NavLink to="/admin/appointments" className={linkClass}>
+              <FaCalendarAlt className="text-lg" />
+              <span>Appointments</span>
+            </NavLink>
+          </li>
+        </ul>
+      </nav>
 
-        <li>
-          <NavLink
-            to="/admin/appointments"
-            className={({ isActive }) =>
-              `${linkClass} ${isActive ? activeClass : inactiveClass}`
-            }
-          >
-            <FaCalendarAlt/>
-            Appointments
-          </NavLink>
-        </li>
-
-      </ul>
-
-      <button
-        onClick={logout}
-        className="flex items-center gap-3 text-red-400 mt-auto"
-      >
-        <FaSignOutAlt/>
-        Logout
-      </button>
-
+      {/* Logout */}
+      <div className="pt-4 border-t border-slate-800">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition duration-200"
+        >
+          <FaSignOutAlt className="text-lg" />
+          <span>Logout</span>
+        </button>
+      </div>
     </aside>
   );
 }

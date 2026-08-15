@@ -1,17 +1,17 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { FaHeartbeat, FaUser, FaEnvelope, FaLock, FaUserMd, FaUserInjured, FaArrowRight, FaShieldAlt } from "react-icons/fa";
 
 export default function RegisterPage() {
-
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    role: ""
+    role: "patient"
   });
 
   const [loading, setLoading] = useState(false);
@@ -25,11 +25,13 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.role) {
+      toast.error("Please select your account type");
+      return;
+    }
 
     try {
-
       setLoading(true);
-
       const res = await axios.post(
         `${import.meta.env.VITE_URL}/api/auth/register`,
         form
@@ -38,147 +40,216 @@ export default function RegisterPage() {
       const data = res.data;
 
       if (data.success) {
-
         toast.success("Account created successfully!");
-
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
         setTimeout(() => {
-
-          if (form.role === "admin")
-            navigate("/admin/dashboard");
-
-          else if (form.role === "doctor")
-            navigate("/doctor/dashboard");
-
-          else
-            navigate("/patient/dashboard");
-
-        }, 1500);
+          if (form.role === "admin") navigate("/admin/dashboard");
+          else if (form.role === "doctor") navigate("/doctor/dashboard");
+          else navigate("/patient/dashboard");
+        }, 1200);
 
       } else {
         toast.error(data.message || "Registration failed");
       }
 
     } catch (err) {
-
       console.error(err);
-      toast.error("Server connection failed");
-
+      toast.error(err.response?.data?.message || "Server connection failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
+    <div className="min-h-screen bg-slate-900 flex font-sans">
+      {/* LEFT BRANDING PANEL */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-12 flex-col justify-between overflow-hidden border-r border-slate-800">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-900 to-slate-800">
+        {/* Brand Header */}
+        <Link to="/" className="flex items-center gap-3 relative z-10">
+          <div className="p-2.5 bg-gradient-to-tr from-blue-600 to-teal-400 rounded-2xl text-white shadow-lg shadow-blue-500/30">
+            <FaHeartbeat className="text-2xl" />
+          </div>
+          <span className="text-2xl font-extrabold tracking-tight">LifeLink</span>
+        </Link>
 
-      <div className="bg-white/95 backdrop-blur-xl p-10 rounded-3xl w-105 shadow-2xl border border-yellow-500/30">
-
-        <div className="text-center mb-8">
-
-          <div className="text-4xl text-yellow-500 mb-4">
-            ❤
+        {/* Content */}
+        <div className="relative z-10 space-y-6 max-w-lg">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-400/20 text-teal-300 text-xs font-semibold">
+            <FaShieldAlt /> Join Thousands of Patients & Caregivers
           </div>
 
-          <h2 className="text-2xl font-bold mb-1">
-            Create Account
-          </h2>
+          <h1 className="text-4xl font-extrabold leading-tight">
+            Start Your Health Journey <br />
+            <span className="bg-gradient-to-r from-teal-300 to-sky-300 bg-clip-text text-transparent">
+              With LifeLink Today.
+            </span>
+          </h1>
 
-          <p className="text-gray-500 text-sm">
-            Join LifeLink and manage your health journey
+          <p className="text-slate-300 text-sm leading-relaxed">
+            Create an account to schedule consultations, access prescriptions, manage patient records, and streamline your medical care.
           </p>
 
+          <div className="space-y-3 pt-2 text-sm text-slate-300">
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold">✓</span>
+              <span>Instant Appointment Booking</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold">✓</span>
+              <span>Verified Medical Doctors</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs font-bold">✓</span>
+              <span>Digital Health Records & History</span>
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          <div>
-            <label className="text-sm font-medium">
-              Full Name
-            </label>
-
-            <input
-              type="text"
-              name="name"
-              placeholder="John Doe"
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-3 rounded-lg border"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">
-              Email Address
-            </label>
-
-            <input
-              type="email"
-              name="email"
-              placeholder="name@example.com"
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-3 rounded-lg border"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">
-              Password
-            </label>
-
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              minLength="6"
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-3 rounded-lg border"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">
-              I am a...
-            </label>
-
-            <select
-              name="role"
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-3 rounded-lg border"
-            >
-              <option value="">Select Role</option>
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-            </select>
-          </div>
-
-          <button
-            disabled={loading}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-lg"
-          >
-            {loading ? "Creating Account..." : "Get Started"}
-          </button>
-
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-yellow-600 font-semibold cursor-pointer"
-          >
-            Sign In
-          </span>
-        </p>
-
+        {/* Footer Note */}
+        <div className="relative z-10 text-xs text-slate-500">
+          © {new Date().getFullYear()} LifeLink Health Systems. All rights reserved.
+        </div>
       </div>
 
+      {/* RIGHT FORM PANEL */}
+      <div className="w-full lg:w-1/2 bg-slate-950 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
+        <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 shadow-2xl space-y-7 border border-slate-100 my-auto">
+          {/* Header */}
+          <div className="space-y-2 text-center">
+            <div className="inline-flex p-3 bg-teal-50 text-teal-600 rounded-2xl mb-1">
+              <FaHeartbeat className="text-2xl" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-slate-900">Create Account</h2>
+            <p className="text-sm text-slate-500">Join LifeLink health platform</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Role Selection Cards */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                I am registering as:
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, role: "patient" })}
+                  className={`p-3.5 rounded-2xl border-2 flex items-center gap-3 transition-all ${
+                    form.role === "patient"
+                      ? "border-teal-600 bg-teal-50/50 text-teal-800 font-bold shadow-sm"
+                      : "border-slate-200 hover:border-slate-300 text-slate-600 font-medium"
+                  }`}
+                >
+                  <FaUserInjured className={`text-xl ${form.role === "patient" ? "text-teal-600" : "text-slate-400"}`} />
+                  <div className="text-left">
+                    <div className="text-sm">Patient</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, role: "doctor" })}
+                  className={`p-3.5 rounded-2xl border-2 flex items-center gap-3 transition-all ${
+                    form.role === "doctor"
+                      ? "border-blue-600 bg-blue-50/50 text-blue-800 font-bold shadow-sm"
+                      : "border-slate-200 hover:border-slate-300 text-slate-600 font-medium"
+                  }`}
+                >
+                  <FaUserMd className={`text-xl ${form.role === "doctor" ? "text-blue-600" : "text-slate-400"}`} />
+                  <div className="text-left">
+                    <div className="text-sm">Doctor</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Full Name
+              </label>
+              <div className="relative">
+                <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="John Doe"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:border-teal-600 focus:ring-4 focus:ring-teal-100 outline-none transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Email Address
+              </label>
+              <div className="relative">
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="name@example.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:border-teal-600 focus:ring-4 focus:ring-teal-100 outline-none transition"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="••••••••"
+                  minLength="6"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:border-teal-600 focus:ring-4 focus:ring-teal-100 outline-none transition"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transition-all duration-200 disabled:opacity-70 mt-2"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <FaArrowRight className="text-xs" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer link */}
+          <div className="pt-3 border-t border-slate-100 text-center text-sm text-slate-500">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-teal-600 font-bold hover:underline"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
