@@ -135,9 +135,13 @@ export default function BookAppointment() {
           }
         }
       );
+        console.log("VITE_URL:", import.meta.env.VITE_URL);
+console.log("Slots API response:", res.data);
 
       setBookedSlots(res.data.bookedSlots || []);
       setPendingSlots(res.data.pendingSlots || []);
+
+      
     } catch (err) {
       console.log("Error fetching slots:", err);
     } finally {
