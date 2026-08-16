@@ -3,7 +3,12 @@ import axios from "axios";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminTopbar from "../components/AdminTopbar";
 import { TableSkeleton } from "../components/Skeleton";
-import { FaCalendarAlt, FaSearch, FaSyncAlt, FaUserMd, FaUserInjured, FaClock } from "react-icons/fa";
+import { 
+  FaCalendarAlt, FaSearch, FaSyncAlt, FaUserMd, 
+  FaUserInjured, FaClock, FaCheck, FaTimes, FaExternalLinkAlt, FaCheckCircle 
+} from "react-icons/fa";
+import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
@@ -32,13 +37,35 @@ export default function Appointments() {
     }
   };
 
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_URL}/api/appointments/status/${id}`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`Appointment status updated to ${status}`);
+      loadAppointments();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update appointment status");
+    }
+  };
+
   const getStatusBadge = (status) => {
-    const s = (status || "Scheduled").toLowerCase();
-    if (s === "completed" || s === "accepted") {
+    const s = (status || "Pending").toLowerCase();
+    if (s === "completed") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+          Completed ✓
+        </span>
+      );
+    }
+    if (s === "accepted") {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          {status || "Accepted"}
+          Accepted ✓
         </span>
       );
     }
@@ -46,14 +73,14 @@ export default function Appointments() {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200/80">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          {status || "Declined"}
+          Declined ✕
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200/80">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-        {status || "Pending"}
+        Pending
       </span>
     );
   };
@@ -86,7 +113,7 @@ export default function Appointments() {
                 All Patient Appointments
               </h1>
               <p className="text-slate-500 text-sm mt-1">
-                Monitor and review scheduled doctor visits across the hospital.
+                Monitor, accept, decline, or mark completed doctor visits across the hospital.
               </p>
             </div>
 
@@ -115,7 +142,7 @@ export default function Appointments() {
               {/* Filters */}
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                 <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto text-xs font-semibold text-slate-600">
-                  {["ALL", "Pending", "Accepted", "Declined"].map((st) => (
+                  {["ALL", "Pending", "Accepted", "Declined", "Completed"].map((st) => (
                     <button
                       key={st}
                       onClick={() => setStatusFilter(st)}
@@ -149,16 +176,17 @@ export default function Appointments() {
                     <th className="py-4 px-6">Assigned Doctor</th>
                     <th className="py-4 px-6">Patient Info</th>
                     <th className="py-4 px-6">Reason / Notes</th>
-                    <th className="py-4 px-6 text-right">Status</th>
+                    <th className="py-4 px-6">Status</th>
+                    <th className="py-4 px-6 text-right">Admin Actions</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {loading ? (
-                    <TableSkeleton rows={5} cols={5} />
+                    <TableSkeleton rows={5} cols={6} />
                   ) : filteredAppointments.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-12 text-slate-400">
+                      <td colSpan="6" className="text-center py-12 text-slate-400">
                         No appointments found matching your filter criteria.
                       </td>
                     </tr>
@@ -176,6 +204,8 @@ export default function Appointments() {
                       const timeStr = !isNaN(dateObj)
                         ? dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                         : "";
+
+                      const status = (app.status || "pending").toLowerCase();
 
                       return (
                         <tr key={app._id || i} className="hover:bg-slate-50/60 transition-colors">
@@ -229,8 +259,49 @@ export default function Appointments() {
                             </p>
                           </td>
 
-                          <td className="py-4 px-6 text-right">
+                          <td className="py-4 px-6">
                             {getStatusBadge(app.status)}
+                          </td>
+
+                          <td className="py-4 px-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {status === "pending" && (
+                                <>
+                                  <button
+                                    onClick={() => handleUpdateStatus(app._id, "accepted")}
+                                    className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                    title="Accept Appointment"
+                                  >
+                                    <FaCheck /> Accept
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateStatus(app._id, "declined")}
+                                    className="p-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                    title="Decline Appointment"
+                                  >
+                                    <FaTimes /> Decline
+                                  </button>
+                                </>
+                              )}
+
+                              {status === "accepted" && (
+                                <button
+                                  onClick={() => handleUpdateStatus(app._id, "completed")}
+                                  className="p-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                  title="Mark Completed"
+                                >
+                                  <FaCheckCircle /> Mark Completed
+                                </button>
+                              )}
+
+                              <Link
+                                to={`/appointment/${app._id}`}
+                                className="p-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                title="View Record"
+                              >
+                                <FaExternalLinkAlt className="text-xs" />
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       );

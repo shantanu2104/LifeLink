@@ -1,6 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const doctorController = require("../controllers/doctorController");
+const { protect } = require("../middleware/authMiddleware");
+
+// LEAVE ROUTES
+router.post("/leave", protect, doctorController.addLeave);
+router.get("/leave/:doctorId", doctorController.getLeaves);
+router.delete("/leave/:date", protect, doctorController.removeLeave);
 
 // @route   POST /api/doctors
 // @desc    Create a new doctor

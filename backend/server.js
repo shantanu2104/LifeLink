@@ -29,6 +29,7 @@ const patientRoutes = require("./routes/patient.js");
 const doctorRoutes = require("./routes/doctor.js");
 const appointmentRoutes = require("./routes/appointment.js");
 const authRoutes = require("./routes/auth.js"); // ✅ Added Auth Route
+const messageRoutes = require("./routes/message.js");
 
 app.get("/", (req, res) => {
   res.send("Hospital Backend API is running");
@@ -38,6 +39,7 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/auth", authRoutes); // ✅ Added Auth Endpoint
+app.use("/api/messages", messageRoutes);
 
 // EXPORT APP (IMPORTANT)
 module.exports = app;

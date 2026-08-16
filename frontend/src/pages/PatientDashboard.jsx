@@ -229,18 +229,33 @@ export default function PatientDashboard() {
                             <span className="text-xs font-semibold text-blue-600 block">{timeStr}</span>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap justify-end">
                             <span
                               className={`text-xs font-extrabold px-3 py-1 rounded-full border ${
-                                status === "accepted"
+                                status === "completed"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : status === "accepted"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                   : status === "declined"
                                   ? "bg-rose-50 text-rose-700 border-rose-200"
                                   : "bg-amber-50 text-amber-700 border-amber-200"
                               }`}
                             >
-                              {status === "accepted" ? "Accepted ✓" : status === "declined" ? "Declined ✕" : "Pending Approval"}
+                              {status === "completed"
+                                ? "Completed / Treated ✓"
+                                : status === "accepted"
+                                ? "Accepted ✓"
+                                : status === "declined"
+                                ? "Declined ✕"
+                                : "Pending Approval"}
                             </span>
+
+                            <Link
+                              to={`/appointment/${app._id}`}
+                              className="text-xs font-bold px-3 py-1 rounded-xl border bg-slate-100 text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition"
+                            >
+                              View Record / Chat
+                            </Link>
 
                             {status === "pending" && (
                               <button

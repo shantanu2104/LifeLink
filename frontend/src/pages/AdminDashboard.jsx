@@ -121,11 +121,19 @@ export default function AdminDashboard() {
               </button>
 
               <Link
-                to="/admin/add-doctor"
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30 hover:-translate-y-0.5 transition-all"
+                to="/admin/patients"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-3 rounded-xl font-bold text-xs shadow-md hover:-translate-y-0.5 transition-all"
               >
                 <FaPlus className="text-xs" />
-                <span>Onboard New Doctor</span>
+                <span>Add Patient</span>
+              </Link>
+
+              <Link
+                to="/admin/add-doctor"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-3 rounded-xl font-bold text-xs shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30 hover:-translate-y-0.5 transition-all"
+              >
+                <FaPlus className="text-xs" />
+                <span>Onboard Doctor</span>
               </Link>
             </div>
           </div>

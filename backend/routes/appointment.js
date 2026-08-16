@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { protect } = require("../middleware/authMiddleware");
 
 const {
   getAllAppointments,
@@ -36,7 +37,7 @@ router.post("/", bookAppointment);
 // ================= PARAMETER ROUTES LAST =================
 
 // GET single appointment
-router.get("/:id", getAppointmentById);
+router.get("/:id", protect, getAppointmentById);
 
 // CANCEL appointment
 router.delete("/:id", cancelAppointment);

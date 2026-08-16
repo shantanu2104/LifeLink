@@ -3,12 +3,23 @@ import axios from "axios";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminTopbar from "../components/AdminTopbar";
 import { TableSkeleton } from "../components/Skeleton";
-import { FaUserInjured, FaSearch, FaSyncAlt, FaCalendarAlt, FaEnvelope } from "react-icons/fa";
+import { FaUserInjured, FaSearch, FaSyncAlt, FaCalendarAlt, FaEnvelope, FaUserPlus, FaTimes } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Add Patient Modal State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: ""
+  });
 
   const token = localStorage.getItem("token");
 
@@ -31,6 +42,32 @@ export default function PatientsPage() {
     loadPatients();
   }, []);
 
+  const handleAddPatientSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email) {
+      toast.error("Name and email are required");
+      return;
+    }
+
+    try {
+      setFormLoading(true);
+      const res = await axios.post(
+        `${import.meta.env.VITE_URL}/api/patients`,
+        form,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "Patient created successfully!");
+      setShowAddModal(false);
+      setForm({ name: "", email: "", password: "", phone: "" });
+      loadPatients();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create patient");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   const filteredPatients = patients.filter((p) =>
     p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -51,17 +88,28 @@ export default function PatientsPage() {
                 Registered Patients
               </h1>
               <p className="text-slate-500 text-sm mt-1">
-                View and review active hospital patient accounts and records.
+                View and register hospital patient accounts and records.
               </p>
             </div>
 
-            <button
-              onClick={loadPatients}
-              className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-semibold text-xs hover:bg-slate-50 transition shadow-sm"
-            >
-              <FaSyncAlt className={loading ? "animate-spin text-indigo-600" : ""} />
-              <span>Refresh List</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={loadPatients}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-semibold text-xs hover:bg-slate-50 transition shadow-sm"
+              >
+                <FaSyncAlt className={loading ? "animate-spin text-indigo-600" : ""} />
+                <span>Refresh List</span>
+              </button>
+
+              {/* PART 3.1 ADD PATIENT BUTTON */}
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition"
+              >
+                <FaUserPlus />
+                <span>Add Patient</span>
+              </button>
+            </div>
           </div>
 
           {/* Table Container */}
@@ -172,6 +220,101 @@ export default function PatientsPage() {
           </div>
         </main>
       </div>
+
+      {/* PART 3.1: ADD PATIENT MODAL */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-6 relative border border-slate-200">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                  <FaUserPlus className="text-lg" />
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-lg">Add New Patient</h3>
+              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPatientSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-emerald-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  placeholder="e.g. patient@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-emerald-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Password (Optional, default: patient123)
+                </label>
+                <input
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-emerald-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. +1 555-0199"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-emerald-600 outline-none"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formLoading}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 transition disabled:opacity-70"
+                >
+                  {formLoading ? "Creating..." : "Create Patient Account"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

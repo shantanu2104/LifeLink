@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaHeartbeat, FaColumns, FaCalendarPlus, FaSignOutAlt } from "react-icons/fa";
+import { FaHeartbeat, FaHome, FaColumns, FaUserMd, FaCalendarPlus, FaCalendarAlt, FaUser, FaSignOutAlt } from "react-icons/fa";
 
 export default function PatientSidebar() {
   const logout = () => {
@@ -32,8 +32,15 @@ export default function PatientSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1">
+      <nav className="flex-1 overflow-y-auto">
         <ul className="flex flex-col gap-1.5">
+          <li>
+            <NavLink to="/" className={linkClass}>
+              <FaHome className="text-lg" />
+              <span>Home</span>
+            </NavLink>
+          </li>
+
           <li>
             <NavLink to="/patient/dashboard" className={linkClass}>
               <FaColumns className="text-lg" />
@@ -43,8 +50,22 @@ export default function PatientSidebar() {
 
           <li>
             <NavLink to="/patient/book-appointment" className={linkClass}>
+              <FaUserMd className="text-lg" />
+              <span>Doctors & Departments</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink to="/patient/book-appointment" className={linkClass}>
               <FaCalendarPlus className="text-lg" />
               <span>Book Appointment</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink to="/patient/dashboard" className={linkClass}>
+              <FaCalendarAlt className="text-lg" />
+              <span>My Appointments</span>
             </NavLink>
           </li>
         </ul>

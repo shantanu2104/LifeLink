@@ -1,4 +1,5 @@
 const Appointment = require("../models/Appointment");
+const User = require("../models/User");
 
 
 // ================= GET ALL APPOINTMENTS =================
@@ -8,7 +9,7 @@ exports.getAllAppointments = async (req, res) => {
 
     const appointments = await Appointment.find()
       .populate("patient", "name email")
-      .populate("doctor", "name specialization");
+      .populate("doctor", "name specialization email phone");
 
     res.status(200).json({
       success: true,
@@ -36,6 +37,48 @@ exports.bookAppointment = async (req, res) => {
 
     const { doctor, appointmentDate } = req.body;
 
+    if (!doctor || !appointmentDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Doctor and date are required"
+      });
+    }
+
+    // 1-month date restriction check
+    const apptDateObj = new Date(appointmentDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 1);
+    maxDate.setHours(23, 59, 59, 999);
+
+    if (apptDateObj < today || apptDateObj > maxDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Appointments can only be booked within 1 month from today"
+      });
+    }
+
+    // Doctor leave check
+    const doctorUser = await User.findById(doctor);
+    if (!doctorUser || doctorUser.role !== "doctor") {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found"
+      });
+    }
+
+    if (doctorUser.leaves && doctorUser.leaves.length > 0) {
+      const dateStr = apptDateObj.toISOString().split("T")[0];
+      if (doctorUser.leaves.includes(dateStr)) {
+        return res.status(400).json({
+          success: false,
+          message: "The selected doctor is on leave on this date"
+        });
+      }
+    }
+
     // prevent duplicate booking
     const existing = await Appointment.findOne({
       doctor,
@@ -47,7 +90,7 @@ exports.bookAppointment = async (req, res) => {
 
       return res.status(400).json({
         success: false,
-        message: "This slot is already booked"
+        message: "This slot is already requested or booked"
       });
 
     }
@@ -211,15 +254,34 @@ exports.getAppointmentById = async (req, res) => {
   try {
 
     const appointment = await Appointment.findById(req.params.id)
-      .populate("patient", "name email")
-      .populate("doctor", "name specialization");
+      .populate("patient", "name email role phone createdAt")
+      .populate("doctor", "name specialization email phone experience");
 
     if (!appointment) {
 
       return res.status(404).json({
+        success: false,
         message: "Appointment not found"
       });
 
+    }
+
+    // Role-based privacy check
+    if (req.user) {
+      const userId = req.user.id.toString();
+      const patientId = appointment.patient ? appointment.patient._id.toString() : "";
+      const doctorId = appointment.doctor ? appointment.doctor._id.toString() : "";
+
+      const isPatient = patientId === userId;
+      const isDoctor = doctorId === userId;
+      const isAdmin = req.user.role === "admin";
+
+      if (!isPatient && !isDoctor && !isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied: You are not authorized to view this patient medical chart"
+        });
+      }
     }
 
     res.status(200).json({
@@ -230,6 +292,7 @@ exports.getAppointmentById = async (req, res) => {
   } catch (error) {
 
     res.status(500).json({
+      success: false,
       message: error.message
     });
 

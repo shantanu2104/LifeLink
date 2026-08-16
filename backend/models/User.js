@@ -36,6 +36,11 @@ const UserSchema = new mongoose.Schema({
   phone: {
     type: String,
   },
+  leaves: [
+    {
+      type: String, // Date string in YYYY-MM-DD format
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -3,8 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import DoctorSidebar from "../components/DoctorSidebar";
 import StatCard from "../components/StatCard";
 import { CardSkeleton } from "../components/Skeleton";
-import { FaUserClock, FaUsers, FaCheck, FaTimes, FaExternalLinkAlt, FaCalendarCheck, FaClock, FaCalendarAlt } from "react-icons/fa";
+import { 
+  FaUserClock, FaUsers, FaCheck, FaTimes, FaExternalLinkAlt, 
+  FaCalendarCheck, FaClock, FaCalendarAlt, FaCalendarMinus, FaCheckCircle 
+} from "react-icons/fa";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const API = `${import.meta.env.VITE_URL}/api`;
 
@@ -13,8 +17,19 @@ export default function DoctorDashboard() {
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Doctor Leave State
+  const [leaves, setLeaves] = useState([]);
+  const [leaveDate, setLeaveDate] = useState("");
+  const [leaveLoading, setLeaveLoading] = useState(false);
+
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+
+  // Calculate 1 month ahead limit
+  const todayStr = new Date().toISOString().split("T")[0];
+  const maxDateObj = new Date();
+  maxDateObj.setMonth(maxDateObj.getMonth() + 1);
+  const maxDateStr = maxDateObj.toISOString().split("T")[0];
 
   const loadAppointments = async (user) => {
     try {
@@ -39,9 +54,52 @@ export default function DoctorDashboard() {
     }
   };
 
+  const loadLeaves = async (doctorId) => {
+    try {
+      const res = await axios.get(`${API}/doctors/leave/${doctorId}`);
+      setLeaves(res.data.leaves || []);
+    } catch (err) {
+      console.log("Error loading leaves:", err);
+    }
+  };
+
+  const handleAddLeave = async (e) => {
+    e.preventDefault();
+    if (!leaveDate) return;
+
+    try {
+      setLeaveLoading(true);
+      const res = await axios.post(
+        `${API}/doctors/leave`,
+        { date: leaveDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(`Leave added for ${leaveDate}`);
+      setLeaves(res.data.leaves || []);
+      setLeaveDate("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add leave");
+    } finally {
+      setLeaveLoading(false);
+    }
+  };
+
+  const handleRemoveLeave = async (date) => {
+    try {
+      const res = await axios.delete(`${API}/doctors/leave/${date}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(`Leave removed for ${date}`);
+      setLeaves(res.data.leaves || []);
+    } catch (err) {
+      toast.error("Failed to remove leave");
+    }
+  };
+
   const updateStatus = async (id, status) => {
     try {
-      await fetch(`${API}/appointments/status/${id}`, {
+      const res = await fetch(`${API}/appointments/status/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -49,9 +107,13 @@ export default function DoctorDashboard() {
         },
         body: JSON.stringify({ status })
       });
-
-      toast.success(`Appointment status updated to ${status}`);
-      loadAppointments(doctor);
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Appointment status updated to ${status}`);
+        loadAppointments(doctor);
+      } else {
+        toast.error(data.message || "Failed to update status");
+      }
     } catch (err) {
       console.log("Error updating appointment status:", err);
       toast.error("Failed to update status");
@@ -63,7 +125,9 @@ export default function DoctorDashboard() {
       const user = JSON.parse(localStorage.getItem("user"));
       setDoctor(user);
       if (user) {
+        const docId = user._id || user.id;
         await loadAppointments(user);
+        await loadLeaves(docId);
       }
     };
 
@@ -89,7 +153,7 @@ export default function DoctorDashboard() {
     (a) => a.status === "pending"
   );
 
-  const todayStr = new Date().toLocaleDateString("en-US", {
+  const displayTodayStr = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "short",
@@ -105,7 +169,7 @@ export default function DoctorDashboard() {
         <header className="sticky top-0 z-10 flex justify-between items-center bg-white/80 backdrop-blur-md px-8 py-4 border-b border-slate-200/80 shadow-xs">
           <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-100/80 px-3 py-1.5 rounded-lg">
             <FaCalendarAlt className="text-teal-600 text-sm" />
-            <span>{todayStr}</span>
+            <span>{displayTodayStr}</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -135,7 +199,7 @@ export default function DoctorDashboard() {
                 Doctor Dashboard
               </h1>
               <p className="text-slate-500 text-sm mt-1">
-                Welcome back, Dr. {doctor.name}. Review patient requests and manage appointments.
+                Welcome back, Dr. {doctor.name}. Manage consultation requests, leaves, and patient charts.
               </p>
             </div>
 
@@ -172,6 +236,61 @@ export default function DoctorDashboard() {
             )}
           </div>
 
+          {/* PART 4.3: DOCTOR LEAVE FEATURE CARD */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                <FaCalendarMinus className="text-lg" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-base">Schedule Leave / Mark Unavailable</h3>
+                <p className="text-xs text-slate-500">Mark future dates (up to 1 month ahead) as unavailable for consultations</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddLeave} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <input
+                type="date"
+                min={todayStr}
+                max={maxDateStr}
+                value={leaveDate}
+                onChange={(e) => setLeaveDate(e.target.value)}
+                required
+                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-teal-600 transition"
+              />
+
+              <button
+                type="submit"
+                disabled={leaveLoading}
+                className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition disabled:opacity-70"
+              >
+                {leaveLoading ? "Adding..." : "Mark Leave Date"}
+              </button>
+            </form>
+
+            {leaves.length > 0 && (
+              <div className="pt-2 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-slate-500">Scheduled Leaves:</span>
+                {leaves.map((date) => (
+                  <span
+                    key={date}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold"
+                  >
+                    <span>{date}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLeave(date)}
+                      className="text-rose-500 hover:text-rose-800 ml-1 font-bold"
+                      title="Remove leave"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Patient Appointment Requests List */}
           <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden space-y-0">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
@@ -181,7 +300,7 @@ export default function DoctorDashboard() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-lg">Patient Consultation Requests</h3>
-                  <p className="text-xs text-slate-500">Review pending requests and patient histories</p>
+                  <p className="text-xs text-slate-500">Review pending requests, prescribe record, and chat with patients</p>
                 </div>
               </div>
 
@@ -263,23 +382,34 @@ export default function DoctorDashboard() {
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-2 justify-end">
                             <span
                               className={`text-xs font-extrabold px-3 py-1 rounded-full border ${
-                                app.status === "accepted"
+                                app.status === "completed"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : app.status === "accepted"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                   : "bg-rose-50 text-rose-700 border-rose-200"
                               }`}
                             >
-                              Status: {app.status}
+                              Status: {app.status === "completed" ? "Completed ✓" : app.status}
                             </span>
 
                             {app.status === "accepted" && (
                               <button
-                                onClick={() => navigate(`/appointment/${app._id}`)}
-                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow-xs transition"
+                                onClick={() => updateStatus(app._id, "completed")}
+                                className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs transition"
                               >
-                                <span>Record Chart</span>
+                                <FaCheckCircle /> Mark Completed
+                              </button>
+                            )}
+
+                            {(app.status === "accepted" || app.status === "completed") && (
+                              <button
+                                onClick={() => navigate(`/appointment/${app._id}`)}
+                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition"
+                              >
+                                <span>Record Chart & Chat</span>
                                 <FaExternalLinkAlt className="text-[10px]" />
                               </button>
                             )}

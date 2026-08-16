@@ -23,15 +23,36 @@ exports.getAllPatients = async (req, res) => {
 // @access  Public
 exports.createPatient = async (req, res) => {
   try {
-    // If we manually add a patient, we create a User with role 'patient'
+    const { name, email, password, phone } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and email are required",
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "A user already exists with this email address",
+      });
+    }
+
     const user = await User.create({
-      ...req.body,
-      role: "patient"
+      name,
+      email,
+      password: password || "patient123",
+      phone: phone || "",
+      role: "patient",
     });
+
+    user.password = undefined;
 
     res.status(201).json({
       success: true,
-      message: "Patient created successfully",
+      message: "Patient registered successfully",
       data: user,
     });
   } catch (error) {

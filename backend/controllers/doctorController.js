@@ -151,3 +151,134 @@ exports.updateDoctorProfile = async (req, res) => {
 
   }
 };
+
+
+// ==============================
+// Add Doctor Leave
+// POST /api/doctors/leave
+// ==============================
+exports.addLeave = async (req, res) => {
+  try {
+    const { date } = req.body;
+    const doctorId = req.user.id;
+
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: "Leave date is required"
+      });
+    }
+
+    const leaveDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 1);
+    maxDate.setHours(23, 59, 59, 999);
+
+    if (leaveDate < today || leaveDate > maxDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Leave date must be within 1 month from today"
+      });
+    }
+
+    const dateStr = leaveDate.toISOString().split("T")[0];
+
+    const doctor = await User.findById(doctorId);
+    if (!doctor || doctor.role !== "doctor") {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor account not found"
+      });
+    }
+
+    if (!doctor.leaves) {
+      doctor.leaves = [];
+    }
+
+    if (doctor.leaves.includes(dateStr)) {
+      return res.status(400).json({
+        success: false,
+        message: "Leave already applied for this date"
+      });
+    }
+
+    doctor.leaves.push(dateStr);
+    await doctor.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Leave marked for ${dateStr}`,
+      leaves: doctor.leaves
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+// ==============================
+// Get Doctor Leaves
+// GET /api/doctors/leave/:doctorId
+// ==============================
+exports.getLeaves = async (req, res) => {
+  try {
+    const doctor = await User.findById(req.params.doctorId);
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      leaves: doctor.leaves || []
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+// ==============================
+// Remove Doctor Leave
+// DELETE /api/doctors/leave/:date
+// ==============================
+exports.removeLeave = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const { date } = req.params;
+
+    const doctor = await User.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found"
+      });
+    }
+
+    doctor.leaves = (doctor.leaves || []).filter((l) => l !== date);
+    await doctor.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Leave removed for ${date}`,
+      leaves: doctor.leaves
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

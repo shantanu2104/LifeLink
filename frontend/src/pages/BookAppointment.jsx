@@ -3,12 +3,18 @@ import axios from "axios";
 import PatientSidebar from "../components/PatientSidebar";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserMd, FaCalendarAlt, FaClock, FaCheckCircle, FaExclamationCircle, FaArrowLeft, FaHeartbeat } from "react-icons/fa";
+import { 
+  FaUserMd, FaCalendarAlt, FaClock, FaCheckCircle, 
+  FaExclamationTriangle, FaArrowLeft, FaSearch, FaClinicMedical 
+} from "react-icons/fa";
 
 export default function BookAppointment() {
   const navigate = useNavigate();
 
   const [doctors, setDoctors] = useState([]);
+  const [selectedDept, setSelectedDept] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [form, setForm] = useState({
     doctor: "",
     date: "",
@@ -19,11 +25,18 @@ export default function BookAppointment() {
   const [bookedSlots, setBookedSlots] = useState([]);
   const [pendingSlots, setPendingSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState("");
+  const [doctorLeaves, setDoctorLeaves] = useState([]);
   const [loading, setLoading] = useState(false);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+
+  // Calculate today and 1 month max date strings
+  const todayStr = new Date().toISOString().split("T")[0];
+  const maxDateObj = new Date();
+  maxDateObj.setMonth(maxDateObj.getMonth() + 1);
+  const maxDateStr = maxDateObj.toISOString().split("T")[0];
 
   // ================= LOAD DOCTORS =================
   useEffect(() => {
@@ -38,6 +51,48 @@ export default function BookAppointment() {
       toast.error("Failed to load doctor list");
     }
   };
+
+  // Derive registered departments dynamically
+  const departmentMap = {};
+  doctors.forEach((doc) => {
+    const dept = doc.specialization || "General Medicine";
+    departmentMap[dept] = (departmentMap[dept] || 0) + 1;
+  });
+
+  const registeredDepartments = Object.keys(departmentMap).map((deptName) => ({
+    name: deptName,
+    count: departmentMap[deptName]
+  }));
+
+  // Filtered doctors list
+  const filteredDoctors = doctors.filter((doc) => {
+    const matchesDept = selectedDept ? (doc.specialization || "General Medicine") === selectedDept : true;
+    const matchesSearch = searchQuery
+      ? doc.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.specialization?.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchesDept && matchesSearch;
+  });
+
+  // Fetch Doctor Leaves when doctor changes
+  useEffect(() => {
+    if (form.doctor) {
+      fetchDoctorLeaves(form.doctor);
+    } else {
+      setDoctorLeaves([]);
+    }
+  }, [form.doctor]);
+
+  const fetchDoctorLeaves = async (doctorId) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_URL}/api/doctors/leave/${doctorId}`);
+      setDoctorLeaves(res.data.leaves || []);
+    } catch (err) {
+      console.error("Error fetching doctor leaves", err);
+    }
+  };
+
+  const isDoctorOnLeave = form.date && doctorLeaves.includes(form.date);
 
   // ================= GENERATE TIME SLOTS =================
   const generateSlots = () => {
@@ -68,7 +123,7 @@ export default function BookAppointment() {
 
   // ================= LOAD BOOKED + PENDING SLOTS =================
   const loadBookedSlots = async () => {
-    if (!form.doctor || !form.date) return;
+    if (!form.doctor || !form.date || isDoctorOnLeave) return;
     try {
       setSlotsLoading(true);
       const res = await axios.get(
@@ -92,16 +147,22 @@ export default function BookAppointment() {
 
   // ================= AUTO LOAD SLOTS =================
   useEffect(() => {
-    if (form.doctor && form.date) {
+    if (form.doctor && form.date && !isDoctorOnLeave) {
       generateSlots();
       loadBookedSlots();
       setSelectedSlot("");
     }
-  }, [form.doctor, form.date]);
+  }, [form.doctor, form.date, isDoctorOnLeave]);
 
   // ================= SUBMIT BOOKING =================
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isDoctorOnLeave) {
+      toast.error("Doctor is on leave on the selected date");
+      return;
+    }
+
     if (!selectedSlot) {
       toast.error("Please click to select an available time slot");
       return;
@@ -148,7 +209,7 @@ export default function BookAppointment() {
       <PatientSidebar />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="p-8 lg:p-10 space-y-8 max-w-4xl w-full mx-auto">
+        <main className="p-8 lg:p-10 space-y-8 max-w-5xl w-full mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
@@ -162,8 +223,55 @@ export default function BookAppointment() {
                 Book Consultation Appointment
               </h1>
               <p className="text-slate-500 text-sm mt-1">
-                Select your preferred doctor, date, and available time slot.
+                Select your department, specialist doctor, date (up to 1 month ahead), and available slot.
               </p>
+            </div>
+          </div>
+
+          {/* PART 2.1 & 2.2: REGISTERED DEPARTMENTS CARDS */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <FaClinicMedical className="text-blue-600" />
+                <span>Registered Hospital Departments</span>
+              </h3>
+              {selectedDept && (
+                <button
+                  onClick={() => setSelectedDept("")}
+                  className="text-xs text-blue-600 hover:underline font-semibold"
+                >
+                  Clear Filter (Show All)
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {registeredDepartments.length === 0 ? (
+                <div className="col-span-full p-4 bg-white rounded-2xl border text-xs text-slate-400">
+                  No registered doctors/departments available currently.
+                </div>
+              ) : (
+                registeredDepartments.map((dept) => {
+                  const isSelected = selectedDept === dept.name;
+                  return (
+                    <button
+                      key={dept.name}
+                      type="button"
+                      onClick={() => setSelectedDept(isSelected ? "" : dept.name)}
+                      className={`p-4 rounded-2xl border text-left transition-all duration-200 ${
+                        isSelected
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-600 shadow-md"
+                          : "bg-white border-slate-200 hover:border-blue-300 hover:shadow-xs text-slate-800"
+                      }`}
+                    >
+                      <div className="font-extrabold text-sm">{dept.name}</div>
+                      <div className={`text-xs mt-1 font-semibold ${isSelected ? "text-blue-100" : "text-slate-500"}`}>
+                        {dept.count} {dept.count === 1 ? "Doctor" : "Doctors"}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -174,17 +282,32 @@ export default function BookAppointment() {
                 <FaCalendarAlt className="text-xl" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 text-lg">Appointment Details</h3>
-                <p className="text-xs text-slate-500">All consultations are verified by staff</p>
+                <h3 className="font-bold text-slate-900 text-lg">Appointment Booking Form</h3>
+                <p className="text-xs text-slate-500">Bookings permitted up to 30 days in advance</p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Doctor Dropdown */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Choose Medical Specialist *
-                </label>
+              {/* Doctor Search & Selection */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Choose Medical Specialist *
+                  </label>
+
+                  {/* Doctor Search Input */}
+                  <div className="relative w-full sm:w-64">
+                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                    <input
+                      type="text"
+                      placeholder="Search doctor or specialty..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:border-blue-600 outline-none transition"
+                    />
+                  </div>
+                </div>
+
                 <div className="relative">
                   <FaUserMd className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                   <select
@@ -194,7 +317,7 @@ export default function BookAppointment() {
                     className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100 outline-none transition font-medium"
                   >
                     <option value="">-- Select Specialist Doctor --</option>
-                    {doctors.map((doc) => (
+                    {filteredDoctors.map((doc) => (
                       <option key={doc._id} value={doc._id}>
                         Dr. {doc.name} ({doc.specialization || "General Medicine"})
                       </option>
@@ -203,16 +326,17 @@ export default function BookAppointment() {
                 </div>
               </div>
 
-              {/* Date Input */}
+              {/* Date Input with 1 Month Max Limit */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Select Consultation Date *
+                  Select Consultation Date (Max 1 Month Ahead) *
                 </label>
                 <div className="relative">
                   <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                   <input
                     type="date"
-                    min={new Date().toISOString().split("T")[0]}
+                    min={todayStr}
+                    max={maxDateStr}
                     value={form.date}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
                     required
@@ -221,8 +345,21 @@ export default function BookAppointment() {
                 </div>
               </div>
 
+              {/* Doctor Leave Warning */}
+              {form.doctor && form.date && isDoctorOnLeave && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold">
+                  <FaExclamationTriangle className="text-lg text-rose-600 shrink-0" />
+                  <div>
+                    <p className="font-extrabold text-rose-900">Doctor is Unavailable / On Leave</p>
+                    <p className="font-medium text-rose-700 mt-0.5">
+                      The selected doctor has marked leave on {form.date}. Please select a different date or another doctor.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Slots Section */}
-              {form.doctor && form.date && (
+              {form.doctor && form.date && !isDoctorOnLeave && (
                 <div className="space-y-4 pt-2 border-t border-slate-100">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
@@ -234,18 +371,28 @@ export default function BookAppointment() {
                     <div className="flex items-center gap-4 text-xs font-semibold">
                       <span className="flex items-center gap-1.5 text-emerald-700">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        Available
+                        Available (Green)
                       </span>
                       <span className="flex items-center gap-1.5 text-amber-700">
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                        Pending
+                        Pending (Orange)
                       </span>
                       <span className="flex items-center gap-1.5 text-rose-700">
                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                        Booked
+                        Booked (Red)
                       </span>
                     </div>
                   </div>
+
+                  {/* PART 2.6 PENDING SLOT NOTIFICATION BANNER */}
+                  {pendingSlots.length > 0 && (
+                    <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-900 flex items-start gap-2.5">
+                      <FaExclamationTriangle className="text-amber-600 text-sm shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Note:</strong> Yellow/orange slots are already requested by another patient and are currently pending approval.
+                      </span>
+                    </div>
+                  )}
 
                   {slotsLoading ? (
                     <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
@@ -265,11 +412,11 @@ export default function BookAppointment() {
 
                         const isSelected = selectedSlot === slot;
 
-                        let buttonClass = "border-slate-200 text-slate-700 hover:border-emerald-500 hover:bg-emerald-50/50";
+                        let buttonClass = "border-emerald-500 text-slate-800 hover:border-emerald-600 hover:bg-emerald-50/50";
                         if (isBooked) {
-                          buttonClass = "bg-rose-50 border-rose-200 text-rose-400 cursor-not-allowed opacity-60";
+                          buttonClass = "bg-rose-50 border-rose-200 text-rose-500 cursor-not-allowed opacity-60";
                         } else if (isPending) {
-                          buttonClass = "bg-amber-50 border-amber-200 text-amber-600 cursor-not-allowed opacity-75";
+                          buttonClass = "bg-amber-50 border-amber-300 text-amber-800 cursor-not-allowed opacity-75";
                         } else if (isSelected) {
                           buttonClass = "bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold border-emerald-600 shadow-md shadow-emerald-500/20";
                         }
@@ -279,7 +426,13 @@ export default function BookAppointment() {
                             key={i}
                             type="button"
                             disabled={isBooked || isPending}
-                            onClick={() => setSelectedSlot(slot)}
+                            onClick={() => {
+                              if (isPending) {
+                                toast.warning("This appointment slot is already requested by another patient and is currently pending. Your appointment is not confirmed.");
+                              } else {
+                                setSelectedSlot(slot);
+                              }
+                            }}
                             className={`p-3 rounded-xl border text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${buttonClass}`}
                           >
                             <span>{slot}</span>
@@ -318,7 +471,7 @@ export default function BookAppointment() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || isDoctorOnLeave}
                   className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 disabled:opacity-70"
                 >
                   {loading ? (
