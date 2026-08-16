@@ -302,47 +302,58 @@ exports.getAppointmentById = async (req, res) => {
 
 
 
+
 // ================= GET DOCTOR BOOKED SLOTS =================
 exports.getDoctorSlots = async (req, res) => {
-
   try {
-
     const { doctorId, date } = req.query;
 
+    if (!doctorId || !date) {
+      return res.status(400).json({
+        success: false,
+        message: "Doctor ID and date are required"
+      });
+    }
+
     const start = new Date(date);
-    start.setHours(0,0,0,0);
+    start.setHours(0, 0, 0, 0);
 
     const end = new Date(date);
-    end.setHours(23,59,59,999);
+    end.setHours(23, 59, 59, 999);
 
     const appointments = await Appointment.find({
       doctor: doctorId,
       status: { $in: ["pending", "accepted"] },
-      appointmentDate: { $gte: start, $lte: end }
+      appointmentDate: {
+        $gte: start,
+        $lte: end
+      }
     });
 
     const bookedSlots = [];
     const pendingSlots = [];
 
-    appointments.forEach(app => {
-
+    appointments.forEach((app) => {
       const time = new Date(app.appointmentDate);
 
-      // Use consistent 24-hour format
-      const slot = time.toLocaleTimeString("en-GB", {
+      // IMPORTANT:
+      // Always convert appointment time to IST.
+      // This prevents Render/production UTC timezone
+      // from changing the displayed slot time.
+      const slot = time.toLocaleTimeString("en-US", {
+        timeZone: "Asia/Kolkata",
         hour: "2-digit",
         minute: "2-digit",
         hour12: true
       });
 
-      if(app.status === "accepted"){
+      if (app.status === "accepted") {
         bookedSlots.push(slot);
       }
 
-      if(app.status === "pending"){
+      if (app.status === "pending") {
         pendingSlots.push(slot);
       }
-
     });
 
     res.json({
@@ -352,12 +363,11 @@ exports.getDoctorSlots = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Error getting doctor slots:", error);
 
     res.status(500).json({
       success: false,
       message: error.message
     });
-
   }
-
 };
