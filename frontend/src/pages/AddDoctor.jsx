@@ -18,6 +18,7 @@ export default function AddDoctor() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -71,10 +72,10 @@ export default function AddDoctor() {
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <AdminSidebar />
+      <AdminSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <AdminTopbar />
+        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
 
         <main className="p-8 lg:p-10 space-y-8 max-w-4xl w-full mx-auto">
           {/* Header */}

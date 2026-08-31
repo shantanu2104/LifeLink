@@ -1,6 +1,6 @@
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaBars } from "react-icons/fa";
 
-export default function AdminTopbar() {
+export default function AdminTopbar({ onMenuClick }) {
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Administrator" };
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -11,10 +11,19 @@ export default function AdminTopbar() {
   });
 
   return (
-    <header className="sticky top-0 z-10 flex justify-between items-center bg-white/80 backdrop-blur-md px-8 py-4 border-b border-slate-200/80 shadow-xs">
-      <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-100/80 px-3 py-1.5 rounded-lg">
-        <FaCalendarAlt className="text-indigo-500 text-sm" />
-        <span>{today}</span>
+    <header className="sticky top-0 z-10 flex justify-between items-center bg-white/80 backdrop-blur-md px-4 lg:px-8 py-4 border-b border-slate-200/80 shadow-xs">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition"
+          aria-label="Toggle Menu"
+        >
+          <FaBars className="text-lg" />
+        </button>
+        <div className="hidden sm:flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-100/80 px-3 py-1.5 rounded-lg">
+          <FaCalendarAlt className="text-indigo-500 text-sm" />
+          <span>{today}</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   FaUserMd, FaCalendarAlt, FaClock, FaCheckCircle, 
-  FaExclamationTriangle, FaArrowLeft, FaSearch, FaClinicMedical 
+  FaExclamationTriangle, FaArrowLeft, FaSearch, FaClinicMedical, FaBars 
 } from "react-icons/fa";
 
 export default function BookAppointment() {
@@ -28,6 +28,7 @@ export default function BookAppointment() {
   const [doctorLeaves, setDoctorLeaves] = useState([]);
   const [loading, setLoading] = useState(false);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -210,9 +211,17 @@ console.log("Slots API response:", res.data);
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <PatientSidebar />
+      <PatientSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
+        <header className="lg:hidden sticky top-0 z-10 flex items-center bg-white/80 backdrop-blur-md px-4 py-4 border-b border-slate-200/80 shadow-xs">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition"
+          >
+            <FaBars className="text-lg" />
+          </button>
+        </header>
         <main className="p-8 lg:p-10 space-y-8 max-w-5xl w-full mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center">

@@ -5,7 +5,7 @@ import StatCard from "../components/StatCard";
 import { CardSkeleton } from "../components/Skeleton";
 import { 
   FaUserClock, FaUsers, FaCheck, FaTimes, FaExternalLinkAlt, 
-  FaCalendarCheck, FaClock, FaCalendarAlt, FaCalendarMinus, FaCheckCircle 
+  FaCalendarCheck, FaClock, FaCalendarAlt, FaCalendarMinus, FaCheckCircle, FaBars 
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -21,6 +21,7 @@ export default function DoctorDashboard() {
   const [leaves, setLeaves] = useState([]);
   const [leaveDate, setLeaveDate] = useState("");
   const [leaveLoading, setLeaveLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -162,14 +163,22 @@ export default function DoctorDashboard() {
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <DoctorSidebar />
+      <DoctorSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <header className="sticky top-0 z-10 flex justify-between items-center bg-white/80 backdrop-blur-md px-8 py-4 border-b border-slate-200/80 shadow-xs">
-          <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-100/80 px-3 py-1.5 rounded-lg">
-            <FaCalendarAlt className="text-teal-600 text-sm" />
-            <span>{displayTodayStr}</span>
+        <header className="sticky top-0 z-10 flex justify-between items-center bg-white/80 backdrop-blur-md px-4 lg:px-8 py-4 border-b border-slate-200/80 shadow-xs">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition"
+            >
+              <FaBars className="text-lg" />
+            </button>
+            <div className="hidden sm:flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-100/80 px-3 py-1.5 rounded-lg">
+              <FaCalendarAlt className="text-teal-600 text-sm" />
+              <span>{displayTodayStr}</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

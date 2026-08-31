@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import DoctorSidebar from "../components/DoctorSidebar";
-import { FaUser, FaEnvelope, FaStethoscope, FaPhone, FaBriefcase, FaUserEdit, FaArrowLeft } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaStethoscope, FaPhone, FaBriefcase, FaUserEdit, FaArrowLeft, FaBars } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 const API = `${import.meta.env.VITE_URL}/api`;
@@ -18,6 +18,7 @@ export default function EditDoctorProfile() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -78,9 +79,18 @@ export default function EditDoctorProfile() {
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <DoctorSidebar />
+      <DoctorSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
+        <header className="lg:hidden sticky top-0 z-10 flex items-center bg-white/80 backdrop-blur-md px-4 py-4 border-b border-slate-200/80 shadow-xs">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition"
+          >
+            <FaBars className="text-lg" />
+          </button>
+        </header>
+
         <main className="p-8 lg:p-10 space-y-8 max-w-3xl w-full mx-auto my-auto">
           <div>
             <Link

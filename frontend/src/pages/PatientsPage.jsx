@@ -20,6 +20,7 @@ export default function PatientsPage() {
     password: "",
     phone: ""
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -75,10 +76,10 @@ export default function PatientsPage() {
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <AdminSidebar />
+      <AdminSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <AdminTopbar />
+        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
 
         <main className="p-8 lg:p-10 space-y-8 max-w-7xl w-full mx-auto">
           {/* Header */}
