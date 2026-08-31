@@ -125,6 +125,7 @@ export default function AddDoctor() {
                 placeholder="e.g. Cardiology, Neurology"
                 value={form.specialization}
                 onChange={handleChange}
+                
               />
 
               <InputField
